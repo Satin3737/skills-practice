@@ -1,0 +1,14 @@
+:root {
+    --c-primary: #00ff88;
+    --c-accent: #ff6b35;
+    --c-white: #f0f0f0;
+    --c-red: #ff4444;
+    --c-yellow: #ffc107;
+    --c-green: #00ff88;
+    --c-shade-1: #1a1a1a;
+    --c-shade-2: #2a2a2a;
+    --c-shade-3: #3a3a3a;
+    --c-shade-4: #666666;
+    --c-dark-blue: #0f0f0f;
+    --c-accent-bg: #242424;
+}

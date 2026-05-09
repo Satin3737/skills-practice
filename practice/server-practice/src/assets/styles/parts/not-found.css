@@ -1,0 +1,18 @@
+.not-found {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    gap: 24px;
+}
+
+.not-found-code {
+    font-size: 240px;
+    font-family: monospace;
+
+    @media (width <= 576px) {
+        font-size: 120px;
+    }
+}

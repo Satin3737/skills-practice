@@ -1,0 +1,61 @@
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+    color: var(--c-shade-4);
+    transition: all 0.2s ease-in-out;
+
+    &:has(:focus-visible) {
+        color: var(--c-primary);
+    }
+
+    &:has(.error:not(:empty)) {
+        input,
+        textarea {
+            border-color: var(--c-red);
+        }
+    }
+
+    input,
+    textarea {
+        width: 100%;
+        outline: none;
+        color: var(--c-white);
+        font-size: 16px;
+        line-height: 20px;
+        padding: 12px 16px;
+        background: var(--c-shade-1);
+        border: 1px solid var(--c-shade-2);
+        border-radius: 8px;
+        transition: inherit;
+
+        &::placeholder {
+            color: var(--c-shade-3);
+        }
+
+        &:focus-within {
+            border-color: var(--c-primary);
+            background: var(--c-accent-bg);
+        }
+
+        &:hover:not(:disabled) {
+            background: var(--c-shade-2);
+        }
+    }
+
+    textarea {
+        resize: none;
+        min-height: 120px;
+    }
+}
+
+.error {
+    color: var(--c-red);
+    font-size: 12px;
+    line-height: 16px;
+
+    &:empty {
+        display: none;
+    }
+}
