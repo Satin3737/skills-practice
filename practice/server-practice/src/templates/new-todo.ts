@@ -23,7 +23,7 @@ const getNewTodoPage = (values?: Partial<INewTodo>, error?: Partial<INewTodo>): 
                         value="${values?.title ?? ''}"
                         required 
                     />
-                    <div class="error">${error?.title ?? ''}</div>
+                    <span class="error">${error?.title ?? ''}</span>
                 </label>
                 <label class="field">
                     Description
@@ -32,7 +32,7 @@ const getNewTodoPage = (values?: Partial<INewTodo>, error?: Partial<INewTodo>): 
                         placeholder="Lear Node as soon as possible"
                         required
                     >${values?.description ?? ''}</textarea>
-                    <div class="error">${error?.description ?? ''}</div>
+                    <span class="error">${error?.description ?? ''}</span>
                 </label>
             </fieldset>
             <button type="submit" class="button button-primary">
