@@ -24,8 +24,6 @@
     font-size: 24px;
     border-radius: 16px;
     font-weight: 700;
-    border: 2px solid var(--c-green);
-    color: var(--c-green);
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
@@ -35,6 +33,16 @@
     transition:
         height 0.15s ease,
         transform 0.15s ease;
+
+    &.response-success {
+        border: 2px solid var(--c-green);
+        color: var(--c-green);
+    }
+
+    &.response-error {
+        border: 2px solid var(--c-accent);
+        color: var(--c-accent);
+    }
 
     .title {
         font-size: 32px;

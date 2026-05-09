@@ -16,11 +16,13 @@ type IError = z.core.$ZodIssue;
 
 class FormHandler {
     private readonly $form: JQuery<HTMLFormElement>;
-    private readonly $response: JQuery<HTMLDivElement>;
+    private readonly $responseSuccess: JQuery<HTMLDivElement>;
+    private readonly $responseError: JQuery<HTMLDivElement>;
 
     public constructor($form: JQuery<HTMLFormElement>) {
         this.$form = $form;
-        this.$response = $('.response', this.$form);
+        this.$responseSuccess = $('[data-response="success"]', this.$form);
+        this.$responseError = $('[data-response="error"]', this.$form);
         this.initListeners();
     }
 
@@ -75,9 +77,8 @@ class FormHandler {
         };
     }
 
-    private showResponse(): void {
-        this.$response
-            .stop(true)
+    private showResponse($el: JQuery<HTMLDivElement>): void {
+        $el.stop(true)
             .addClass('_show')
             .delay(3000)
             .queue(function (next) {
@@ -90,9 +91,29 @@ class FormHandler {
         $('.submit', this.$form).prop('disabled', state).toggleClass('_loading', state);
     }
 
-    private fakeSubmit(data: IFormValues): Promise<void> {
+    private async fakeSubmit(data: IFormValues): Promise<void> {
         console.log('From submitted with data', data);
+
+        // fake loading + success
         return new Promise(resolve => setTimeout(resolve, 3000));
+
+        // --------------------------------------------------------
+
+        // fake loading + error
+        // await new Promise(resolve => setTimeout(resolve, 3000));
+        //
+        // const response = await fetch('example.com', {
+        //     method: 'POST',
+        //     headers: {'Content-Type': 'application/json'},
+        //     body: JSON.stringify(data)
+        // });
+        //
+        // if (!response.ok) {
+        //     throw new Error(`Response status: ${response.status}`);
+        // }
+        //
+        // const result = await response.json();
+        // console.log('Response:', result);
     }
 
     private async handleSubmit(e: JQuery.SubmitEvent): Promise<void> {
@@ -113,9 +134,10 @@ class FormHandler {
         try {
             await this.fakeSubmit(data);
             this.$form[0].reset();
-            this.showResponse();
+            this.showResponse(this.$responseSuccess);
         } catch (e) {
             console.error(e);
+            this.showResponse(this.$responseError);
         } finally {
             this.setLoading(false);
         }
