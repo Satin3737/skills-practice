@@ -1,0 +1,18 @@
+{
+    "$schema": "https://json.schemastore.org/package.json",
+    "name": "server-practice",
+    "version": "1.0.0",
+    "main": "dist/app.js",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/app.ts",
+        "start": "node dist/app.js",
+        "build": "tsx esbuild.config.ts"
+    },
+    "author": "satin",
+    "license": "ISC",
+    "description": "server practice",
+    "dependencies": {
+        "zod": "^4.4.3"
+    }
+}
