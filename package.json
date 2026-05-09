@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "lint": "npx eslint .",
-        "format": "prettier --write ."
+        "format": "prettier --write --config .prettierrc.ts \"./**/*.{ts,tsx,js,jsx,css,scss,json,html}\""
     },
     "author": "satin",
     "license": "ISC",
@@ -15,7 +15,6 @@
         "@eslint/js": "^10.0.1",
         "@trivago/prettier-plugin-sort-imports": "^6.0.2",
         "@types/node": "^25.6.2",
-        "esbuild": "^0.28.0",
         "eslint": "^10.3.0",
         "globals": "^17.6.0",
         "jiti": "^2.7.0",
