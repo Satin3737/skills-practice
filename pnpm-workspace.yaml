@@ -1,2 +1,6 @@
+packages:
+    - 'practice/**'
+    - 'theory/**'
+
 allowBuilds:
-  esbuild: true
+    esbuild: true
