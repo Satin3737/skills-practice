@@ -4,7 +4,7 @@ import {BaseUrl, Port, StorageDir} from '@/const';
 import {TodoController, staticHandler} from '@/controllers';
 import {Router} from '@/router';
 import {getNotFoundPage} from '@/templates';
-import {type IMessage, type IStrictMessage, Methods, MimeTypes} from '@/types';
+import {type IMessage, type IMethods, type IStrictMessage, Methods, MimeTypes} from '@/types';
 
 class App {
     private readonly router: Router;
@@ -48,9 +48,13 @@ class App {
     }
 
     private checkUrlAndMethodIsValid(req: IMessage['req'], res: IMessage['res']): req is IStrictMessage['req'] {
-        const isValid = !!req.url && !!req.method && this.router.isMethodAvailable(req.method);
+        const isValid = !!req.url && !!req.method && this.isMethodAvailable(req.method);
         if (!isValid) res.writeHead(400).end('Bad request');
         return isValid;
+    }
+
+    private isMethodAvailable(method: string): method is IMethods {
+        return method.toLowerCase() in Methods;
     }
 
     private registerRoutes(): void {

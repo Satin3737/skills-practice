@@ -1,5 +1,5 @@
 import {parseUrl} from '@/helpers';
-import {type IMethods, type IStrictMessage, Methods} from '@/types';
+import type {IStrictMessage} from '@/types';
 import type {IParams, IRegisterRoute, IRoute, IRouteResolve} from './types';
 
 class Router {
@@ -53,10 +53,6 @@ class Router {
         }
 
         return null;
-    }
-
-    public isMethodAvailable(method: string): method is IMethods {
-        return method.toLowerCase() in Methods;
     }
 
     private parseToSegments(path: string): string[] {
