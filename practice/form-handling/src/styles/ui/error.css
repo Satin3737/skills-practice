@@ -1,0 +1,18 @@
+.error {
+    color: var(--c-red);
+    font-size: 12px;
+    line-height: 16px;
+    height: 16px;
+    overflow: hidden;
+    opacity: 1;
+    transform: scaleY(1);
+    transition:
+        height 0.15s ease,
+        transform 0.15s ease;
+
+    &:empty {
+        height: 0;
+        opacity: 0;
+        transform: scaleY(0.6);
+    }
+}
