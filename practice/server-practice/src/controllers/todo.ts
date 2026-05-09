@@ -27,7 +27,7 @@ class TodoController {
 
     public addTodoHandler: IHandler = async (req, res) => {
         const body = await parseBody(req);
-        const {success, data, error} = await newTodoSchema.safeParseAsync(body);
+        const {success, data, error} = newTodoSchema.safeParse(body);
 
         if (!success) {
             const flatError = flattenError(error).fieldErrors;
@@ -46,7 +46,7 @@ class TodoController {
     };
 
     public deleteTodoHandler: IHandler = async (_, res, {params}) => {
-        const {success, data} = await deleteTodoSchema.safeParseAsync(params);
+        const {success, data} = deleteTodoSchema.safeParse(params);
         success && (await this.todoService.removeTodo(data));
         res.writeHead(302, {Location: '/'}).end();
     };
