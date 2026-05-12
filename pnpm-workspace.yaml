@@ -1,6 +1,5 @@
 packages:
   - 'practice/**'
-  - 'theory/**'
 
 allowBuilds:
   '@parcel/watcher': true

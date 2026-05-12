@@ -1,0 +1,32 @@
+.main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+    width: 100%;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.result {
+    font-size: 16px;
+    text-align: center;
+}
+
+.counter {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 20px;
+
+    span {
+        font-family: monospace;
+        font-size: 32px;
+        color: var(--c-primary);
+    }
+}
