@@ -12,6 +12,6 @@
     "license": "ISC",
     "description": "web worker practice",
     "devDependencies": {
-        "vite": "^8.0.12"
+        "vite": "^8.0.13"
     }
 }
