@@ -1,0 +1,12 @@
+{
+    "extends": ["../../tsconfig.json"],
+    "compilerOptions": {
+        "paths": {
+            "@reusable": ["../../reusable/styles/*"],
+            "@/*": ["./src/*"]
+        },
+        "lib": ["esnext", "DOM"],
+        "types": ["vite/client", "node"]
+    },
+    "include": ["src", "vite.config.ts"]
+}

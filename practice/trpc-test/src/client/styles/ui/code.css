@@ -1,0 +1,18 @@
+pre {
+    margin: 0;
+    background: var(--c-shade-1);
+    border: 1px solid var(--c-shade-2);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+
+    code {
+        display: block;
+        font-family: ui-monospace, 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--c-primary);
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+}

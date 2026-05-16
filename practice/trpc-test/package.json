@@ -1,0 +1,24 @@
+{
+    "name": "trpc-test",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "server": "tsx watch src/server/index.ts",
+        "client": "vite",
+        "dev": "pnpm server & pnpm client"
+    },
+    "author": "satin",
+    "license": "ISC",
+    "description": "fastify + trpc practice",
+    "dependencies": {
+        "@fastify/cors": "^11.2.0",
+        "@trpc/client": "^11.17.0",
+        "@trpc/server": "^11.17.0",
+        "fastify": "^5.8.5",
+        "zod": "^4.4.3"
+    },
+    "devDependencies": {
+        "vite": "^8.0.13"
+    }
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>tRPC + Fastify demo</title>
+    </head>
+    <body>
+        <main>
+            <h1 class="title">tRPC + Fastify demo</h1>
+            <form class="form" novalidate>
+                <fieldset class="fields">
+                    <legend class="legend">Get user by id</legend>
+                    <label class="field">
+                        ID
+                        <input type="number" data-input="id" value="1" min="1" />
+                    </label>
+                    <button type="button" class="button button-primary" data-action="get-by-id">Get user</button>
+                </fieldset>
+                <fieldset class="fields">
+                    <legend class="legend">List all users</legend>
+                    <button type="button" class="button button-primary" data-action="list">List users</button>
+                </fieldset>
+                <fieldset class="fields">
+                    <legend class="legend">Create user</legend>
+                    <label class="field">
+                        Name
+                        <input type="text" data-input="name" placeholder="Some name" />
+                    </label>
+                    <label class="field">
+                        Age
+                        <input type="number" inputmode="numeric" data-input="age" placeholder="Some age" />
+                    </label>
+                    <button type="button" class="button button-primary" data-action="create">Create</button>
+                </fieldset>
+                <fieldset class="fields">
+                    <legend class="legend">Result</legend>
+                    <pre><code data-result>—</code></pre>
+                </fieldset>
+            </form>
+        </main>
+        <script type="module" src="/main.ts"></script>
+    </body>
+</html>
