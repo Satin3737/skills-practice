@@ -1,7 +1,12 @@
 import esbuild from 'esbuild';
 import {cpSync, rmSync} from 'fs';
+import path from 'path';
 
 rmSync('dist', {recursive: true, force: true});
+
+const alias = {
+    '@reusable': path.resolve(import.meta.dirname, '../../../reusable')
+};
 
 await Promise.all([
     esbuild.build({
@@ -11,12 +16,14 @@ await Promise.all([
         packages: 'external',
         format: 'esm',
         platform: 'node',
-        outdir: 'dist'
+        outdir: 'dist',
+        alias
     }),
     esbuild.build({
-        entryPoints: ['src/assets/styles/index.css'],
+        entryPoints: ['src/assets/_styles/index.css'],
         bundle: true,
-        outdir: 'dist/assets/styles'
+        outdir: 'dist/assets/styles',
+        alias
     })
 ]).catch(() => process.exit(1));
 

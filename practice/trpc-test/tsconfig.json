@@ -2,7 +2,7 @@
     "extends": ["../../tsconfig.json"],
     "compilerOptions": {
         "paths": {
-            "@reusable": ["../../reusable/styles/*"],
+            "@reusable/*": ["../../reusable/*"],
             "@/*": ["./src/*"]
         },
         "lib": ["esnext", "DOM"],

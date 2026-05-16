@@ -1,0 +1,8 @@
+.back-btn {
+    width: fit-content;
+    margin-block-end: 24px;
+}
+
+.fields {
+    gap: 16px;
+}

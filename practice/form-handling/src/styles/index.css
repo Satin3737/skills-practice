@@ -1,14 +1,60 @@
-@import 'base/reboot.css';
-@import 'base/variables.css';
-@import 'base/view-transition.css';
-@import 'base/layout.css';
+@import '@reusable/styles/reusable.css';
 
-@import 'ui/title.css';
-@import 'ui/button.css';
-@import 'ui/spinner.css';
-@import 'ui/field.css';
-@import 'ui/checkbox-group.css';
-@import 'ui/radio-group.css';
-@import 'ui/error.css';
+.response {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    font-size: 24px;
+    border-radius: 16px;
+    font-weight: 700;
+    transform: scaleY(1);
+    opacity: 1;
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s ease;
 
-@import 'parts/form.css';
+    @starting-style {
+        transform: scaleY(0);
+        opacity: 0;
+    }
+
+    &.response-success {
+        border: 2px solid var(--c-green);
+        color: var(--c-green);
+    }
+
+    &.response-error {
+        border: 2px solid var(--c-accent);
+        color: var(--c-accent);
+    }
+
+    &._show {
+        display: flex;
+    }
+
+    .title {
+        font-size: 32px;
+    }
+}
+
+.submit {
+    margin-top: auto;
+    position: relative;
+
+    .spinner {
+        pointer-events: none;
+        position: absolute;
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    &._loading {
+        color: transparent;
+
+        .spinner {
+            opacity: 1;
+            visibility: visible;
+        }
+    }
+}

@@ -5,9 +5,9 @@
     "main": "dist/app.js",
     "type": "module",
     "scripts": {
-        "dev": "tsx watch src/app.ts",
+        "dev": "tsx esbuild-scripts/dev.ts",
         "start": "node dist/app.js",
-        "build": "tsx esbuild.config.ts"
+        "build": "tsx esbuild-scripts/build.ts"
     },
     "author": "satin",
     "license": "ISC",

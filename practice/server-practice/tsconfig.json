@@ -2,8 +2,9 @@
     "extends": ["../../tsconfig.json"],
     "compilerOptions": {
         "paths": {
+            "@reusable/*": ["../../reusable/*"],
             "@/*": ["./src/*"]
         }
     },
-    "include": ["src", "esbuild.config.ts"]
+    "include": ["src", "esbuild-scripts"]
 }

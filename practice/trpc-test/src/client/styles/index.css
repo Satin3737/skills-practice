@@ -1,11 +1,5 @@
-@import 'base/reboot.css';
-@import 'base/variables.css';
-@import 'base/view-transition.css';
-@import 'base/layout.css';
+@import '@reusable/styles/reusable.css';
 
-@import 'ui/title.css';
-@import 'ui/button.css';
-@import 'ui/field.css';
-@import 'ui/code.css';
-
-@import 'parts/form.css';
+.form {
+    padding-top: 24px;
+}
