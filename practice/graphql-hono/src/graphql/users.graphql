@@ -1,0 +1,23 @@
+query GetUser($id: Int!) {
+    user(id: $id) {
+        id
+        name
+        age
+    }
+}
+
+query ListUsers($name: String, $age: Int) {
+    users(name: $name, age: $age) {
+        id
+        name
+        age
+    }
+}
+
+mutation CreateUser($input: CreateUserInput!) {
+    createUser(input: $input) {
+        id
+        name
+        age
+    }
+}
