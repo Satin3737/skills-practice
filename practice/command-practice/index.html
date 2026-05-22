@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Command practice</title>
+    </head>
+    <body>
+        <main class="main">
+            <h1 class="title">Fancy command practice</h1>
+            <div class="wrapper">
+                <div class="actions">
+                    <button class="button button-primary" data-action="increment">
+                        <i data-lucide="arrow-up-10"></i>
+                        Increment
+                    </button>
+                    <button class="button button-primary" data-action="decrement">
+                        <i data-lucide="arrow-down-01"></i>
+                        Decrement
+                    </button>
+                    <button class="button button-primary" data-action="reset">
+                        <i data-lucide="refresh-ccw-dot"></i>
+                        Reset
+                    </button>
+                </div>
+                <div class="actions">
+                    <label class="field">
+                        <input type="text" inputmode="numeric" data-action="input" placeholder="Enter a number" />
+                    </label>
+                    <button class="button button-secondary" data-action="set">
+                        <i data-lucide="file-digit"></i>
+                        Set
+                    </button>
+                </div>
+                <h2 class="counter" data-counter>0</h2>
+                <div class="actions">
+                    <button class="button button-secondary" data-action="undo">
+                        <i data-lucide="undo-dot"></i>
+                        Undo
+                    </button>
+                    <button class="button button-secondary" data-action="redo">
+                        <i data-lucide="redo-dot"></i>
+                        Redo
+                    </button>
+                </div>
+            </div>
+        </main>
+        <script type="module" src="/src/main.ts"></script>
+    </body>
+</html>

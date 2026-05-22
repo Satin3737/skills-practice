@@ -1,0 +1,47 @@
+@import '@reusable/styles/reusable.css';
+
+.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+}
+
+.wrapper {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    max-width: 460px;
+    width: 100%;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+
+    &:not(:has(.field)) {
+        flex-wrap: wrap;
+    }
+
+    .field,
+    .button {
+        flex: 1 1 auto;
+        min-width: 120px;
+    }
+
+    .field + .button {
+        flex: 0 0 auto;
+    }
+}
+
+.counter {
+    font-size: 96px;
+    color: var(--c-accent);
+    text-align: center;
+}

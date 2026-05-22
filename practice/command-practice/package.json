@@ -1,6 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/package.json",
-    "name": "web-worker",
+    "name": "command-practice",
     "private": true,
     "version": "1.0.0",
     "type": "module",
@@ -11,7 +11,10 @@
     },
     "author": "satin",
     "license": "ISC",
-    "description": "web worker practice",
+    "description": "command practice",
+    "dependencies": {
+        "lucide": "^1.16.0"
+    },
     "devDependencies": {
         "vite": "^8.0.14"
     }
