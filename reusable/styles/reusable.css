@@ -1,14 +1,2 @@
-@import 'base/reboot.css';
-@import 'base/variables.css';
-@import 'base/view-transition.css';
-@import 'base/layout.css';
-
-@import 'ui/title.css';
-@import 'ui/button.css';
-@import 'ui/spinner.css';
-@import 'ui/field.css';
-@import 'ui/checkbox-group.css';
-@import 'ui/radio-group.css';
-@import 'ui/error.css';
-@import 'ui/code.css';
-@import 'ui/form.css';
+@import 'base/index.css';
+@import 'ui/index.css';
