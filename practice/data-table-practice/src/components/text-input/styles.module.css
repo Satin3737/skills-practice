@@ -1,0 +1,47 @@
+.wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--c-shade-4);
+    text-transform: uppercase;
+}
+
+.input {
+    flex: 1 1 auto;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--c-shade-2);
+    outline: none;
+    color: var(--c-white);
+    font-size: 16px;
+    padding: 12px 16px;
+    min-height: 48px;
+    transition: all 0.3s ease-in-out;
+
+    &[type='number'] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+
+    &[type='number']::-webkit-outer-spin-button,
+    &[type='number']::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    &::placeholder {
+        color: var(--c-shade-3);
+    }
+
+    &:hover:not(:disabled),
+    &:focus-within {
+        border-color: var(--c-primary);
+        background: var(--c-shade-2);
+    }
+}
