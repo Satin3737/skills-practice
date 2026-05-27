@@ -45,10 +45,9 @@ class ImposterObserver {
 }
 
 const observer = new ImposterObserver();
-const listener = (crue: ICrue) => console.log(crue, 'Impostor alarm');
-
 console.log(observer.checkCrue(), 'original crue');
 
+const listener = (crue: ICrue) => console.log(crue, 'Impostor alarm');
 observer.subscribe(listener);
 
 observer.insertImpostor(CrueMember.pilot);
