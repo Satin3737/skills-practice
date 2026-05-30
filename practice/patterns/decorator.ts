@@ -12,6 +12,7 @@ abstract class Trooper {
 
 class Stormtrooper extends Trooper {
     public readonly callSign: string;
+
     public equipment: string = 'Stormtrooper';
 
     public constructor(callSign: string) {
@@ -39,6 +40,7 @@ class StormtrooperDecorator extends Trooper {
     public get callSign(): string {
         return this.wrapper.callSign;
     }
+
     public get equipment(): string {
         return this.wrapper.equipment;
     }
@@ -81,6 +83,7 @@ const BattleEnvironment = {
 } as const;
 
 type IBattleEnvironment = (typeof BattleEnvironment)[keyof typeof BattleEnvironment];
+
 type IEnvironment = IBattleEnvironment | `${IBattleEnvironment} ${string}`;
 
 class Battle {
