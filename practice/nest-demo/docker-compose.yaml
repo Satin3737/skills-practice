@@ -1,0 +1,15 @@
+services:
+    nest-demo-mysql:
+        image: mysql:latest
+        container_name: nest-demo-mysql
+        ports:
+            - "3306:3306"
+        env_file:
+            - .env
+        volumes:
+            - /var/lib/mysql
+        healthcheck:
+            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+            retries: 10
+            interval: 3s
+            timeout: 30s

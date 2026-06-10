@@ -2,5 +2,8 @@ packages:
   - 'practice/**'
 
 allowBuilds:
-  '@parcel/watcher': true
-  esbuild: true
+  '@nestjs/core': false
+  '@parcel/watcher': false
+  '@scarf/scarf': false
+  esbuild: false
+  unrs-resolver: false

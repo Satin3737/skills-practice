@@ -11,6 +11,7 @@ const config: Config = {
     arrowParens: 'avoid',
     importOrder: ['<THIRD_PARTY_MODULES>', '^@/(.*)$', '^[./(.*)$]'],
     importOrderSortSpecifiers: true,
+    importOrderParserPlugins: ['typescript', 'jsx', 'decorators-legacy'],
     plugins: ['@trivago/prettier-plugin-sort-imports']
 };
 
