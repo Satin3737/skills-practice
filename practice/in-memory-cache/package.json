@@ -1,0 +1,14 @@
+{
+    "$schema": "https://json.schemastore.org/package.json",
+    "name": "in-memory-cache",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "author": "satin",
+    "license": "ISC",
+    "description": "in-memory-cache",
+    "dependencies": {
+        "lru-cache": "^11.5.1",
+        "node-cache": "^5.1.2"
+    }
+}

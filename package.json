@@ -10,7 +10,7 @@
     "author": "satin",
     "license": "ISC",
     "description": "skills practice",
-    "packageManager": "pnpm@11.5.2",
+    "packageManager": "pnpm@11.5.3",
     "devDependencies": {
         "@eslint/js": "^10.0.1",
         "@trivago/prettier-plugin-sort-imports": "^6.0.2",
@@ -20,7 +20,7 @@
         "eslint-plugin-react-refresh": "^0.5.2",
         "globals": "^17.6.0",
         "jiti": "^2.7.0",
-        "prettier": "^3.8.3",
+        "prettier": "^3.8.4",
         "tsx": "^4.22.4",
         "typescript": "^6.0.3",
         "typescript-eslint": "^8.61.0"
