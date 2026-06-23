@@ -4,6 +4,8 @@ packages:
 allowBuilds:
   '@nestjs/core': false
   '@parcel/watcher': false
+  '@prisma/engines': false
   '@scarf/scarf': false
   esbuild: false
+  prisma: false
   unrs-resolver: false
