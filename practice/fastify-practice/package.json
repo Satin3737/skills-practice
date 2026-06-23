@@ -1,0 +1,41 @@
+{
+    "$schema": "https://json.schemastore.org/package.json",
+    "name": "fastify-practice",
+    "version": "1.0.0",
+    "main": "dist/app.js",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/app.ts",
+        "build": "pnpm eslint . && tsx esbuild.config.ts",
+        "start": "node dist/app.js",
+        "db:generate": "pnpm dlx prisma generate",
+        "db:migrate": "pnpm dlx prisma migrate dev",
+        "db:create-migration": "pnpm dlx prisma migrate dev --create-only",
+        "db:studio": "pnpm dlx prisma studio"
+    },
+    "author": "satin",
+    "license": "ISC",
+    "description": "fastify practice",
+    "dependencies": {
+        "@fastify/autoload": "^6.3.1",
+        "@fastify/cors": "^11.2.0",
+        "@fastify/helmet": "^13.0.2",
+        "@fastify/sensible": "^6.0.4",
+        "@fastify/type-provider-typebox": "^6.1.0",
+        "@prisma/adapter-pg": "^7.8.0",
+        "@prisma/client": "^7.8.0",
+        "@sinclair/typebox": "0.34.49",
+        "@zrosenbauer/fastify-prisma": "^7.0.2",
+        "dotenv": "^17.4.2",
+        "fastify": "^5.8.5",
+        "fastify-cli": "^8.0.0",
+        "fastify-plugin": "^6.0.0",
+        "pg": "^8.22.0",
+        "prismabox": "^1.1.26"
+    },
+    "devDependencies": {
+        "@types/pg": "^8.20.0",
+        "esbuild": "^0.28.1",
+        "prisma": "^7.8.0"
+    }
+}
