@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/database/prisma"
+}
+
+generator prismabox {
+  provider = "prismabox"
+  output   = "../src/database/prismabox"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum StormtrooperType {
+  trooper
+  pilot
+  sniper
+  captain
+}
+
+enum PlanetType {
+  dwarf
+  gasGiant
+  satellite
+  exoplanet
+}
+
+model Stormtrooper {
+  id       Int              @id @default(autoincrement())
+  callSign String
+  email    String           @unique
+  type     StormtrooperType @default(trooper)
+  missions Mission[]
+  weapons  Weapon[]
+}
+
+model Weapon {
+  id           Int            @id @default(autoincrement())
+  mark         String
+  damage       Int
+  isDeadly     Boolean        @default(false)
+  stormtrooper Stormtrooper[]
+}
+
+model Mission {
+  id           Int            @id @default(autoincrement())
+  title        String
+  briefing     String?
+  isCompleted  Boolean        @default(false)
+  stormtrooper Stormtrooper[]
+  planet       Planet         @relation(fields: [planetId], references: [id], onDelete: Cascade)
+  planetId     Int
+}
+
+model Planet {
+  id       Int        @id @default(autoincrement())
+  name     String
+  size     Int
+  type     PlanetType @default(exoplanet)
+  hasRings Boolean    @default(false)
+  missions Mission[]
+}
