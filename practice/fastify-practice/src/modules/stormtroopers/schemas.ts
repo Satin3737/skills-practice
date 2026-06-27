@@ -1,6 +1,5 @@
 import {Type} from '@fastify/type-provider-typebox';
 import {byIdPSchema, paginatedListSchema} from '@/common/schemas';
-import {StormtrooperType} from '@/database/prisma/enums';
 import {StormtrooperPlain} from '@/database/prismabox/Stormtrooper';
 
 export const getStormtroopersSchema = {
@@ -23,9 +22,7 @@ export const getStormtrooperSchema = {
 export const createStormtrooperSchema = {
     body: Type.Object(
         {
-            callSign: Type.String({minLength: 3, maxLength: 255}),
-            email: Type.String({pattern: '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'}),
-            type: Type.Optional(Type.Enum(StormtrooperType))
+            callSign: Type.String({minLength: 3, maxLength: 255})
         },
         {additionalProperties: false}
     ),
