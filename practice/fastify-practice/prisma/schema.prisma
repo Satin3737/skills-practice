@@ -12,11 +12,11 @@ datasource db {
   provider = "postgresql"
 }
 
-enum StormtrooperType {
+enum UserType {
   trooper
-  pilot
-  sniper
   captain
+  admiral
+  emperor
 }
 
 enum PlanetType {
@@ -26,11 +26,30 @@ enum PlanetType {
   exoplanet
 }
 
+model User {
+  id             Int          @id @default(autoincrement())
+  email          String       @unique
+  password       String
+  type           UserType     @default(trooper)
+  stormtrooper   Stormtrooper @relation(fields: [stormtrooperId], references: [id], onDelete: Cascade)
+  stormtrooperId Int          @unique
+  sessions       Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
 model Stormtrooper {
-  id       Int              @id @default(autoincrement())
+  id       Int       @id @default(autoincrement())
   callSign String
-  email    String           @unique
-  type     StormtrooperType @default(trooper)
+  user     User?
   missions Mission[]
   weapons  Weapon[]
 }
