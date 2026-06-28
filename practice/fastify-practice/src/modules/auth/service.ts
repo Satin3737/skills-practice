@@ -5,7 +5,7 @@ import {RefreshTokenAgeSec} from './const';
 import {hashPassword, verifyPassword} from './helper';
 import type {ILoginUserData, IRegisterUserData, IUserWithStormtrooper} from './types';
 
-class UserService {
+class AuthService {
     private readonly db: PrismaClient;
 
     public constructor(db: PrismaClient) {
@@ -54,4 +54,4 @@ class UserService {
     }
 }
 
-export default UserService;
+export default AuthService;

@@ -9,18 +9,18 @@ import {
     refreshTokenSchema,
     registerUserSchema
 } from './schemas';
-import UserService from './service';
+import AuthService from './service';
 
 const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
-    const userService = new UserService(fastify.prisma);
+    const authService = new AuthService(fastify.prisma);
 
     fastify.post('/register', {schema: registerUserSchema}, async (req, res): Promise<void> => {
-        res.code(201).send({user: await userService.createUser(req.body)});
+        res.code(201).send({user: await authService.createUser(req.body)});
     });
 
     fastify.post('/login', {schema: loginUserSchema}, async (req, res): Promise<void> => {
-        const user = await userService.verifyUser(req.body);
-        const session = await userService.createSession(user.id);
+        const user = await authService.verifyUser(req.body);
+        const session = await authService.createSession(user.id);
         const payload = {sub: user.id, type: user.type};
 
         const accessToken = await res.jwtSign({
@@ -50,14 +50,14 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
         if (tokenType !== TokenTypes.refresh || !sessionId) throw httpErrors.unauthorized();
 
-        const session = await userService.getSessionById(sessionId);
+        const session = await authService.getSessionById(sessionId);
 
         if (!session || session.expiresAt < new Date()) {
-            !!session && (await userService.deleteSession(sessionId));
+            !!session && (await authService.deleteSession(sessionId));
             throw httpErrors.unauthorized();
         }
 
-        const user = await userService.getUserById(id);
+        const user = await authService.getUserById(id);
         const accessToken = await res.jwtSign({sub: user.id, type: user.type, tokenType: TokenTypes.access});
 
         res.send({token: accessToken});
@@ -67,7 +67,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         try {
             await req.jwtVerify({onlyCookie: true});
             const sessionId = req.user.sessionId;
-            !!sessionId && (await userService.deleteSession(sessionId));
+            !!sessionId && (await authService.deleteSession(sessionId));
         } catch {
             fastify.log.info('Force logout');
         }
@@ -80,7 +80,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         try {
             await req.jwtVerify({onlyCookie: true});
             const id = req.user.id;
-            !!id && (await userService.deleteAllSessions(id));
+            !!id && (await authService.deleteAllSessions(id));
         } catch {
             fastify.log.info('Force logout');
         }
@@ -93,7 +93,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         '/me',
         {schema: getCurrentUserSchema, onRequest: fastify.authGuard(UserType.trooper)},
         async (req, res): Promise<void> => {
-            res.send({user: await userService.getCurrentUser(req.user.id)});
+            res.send({user: await authService.getCurrentUser(req.user.id)});
         }
     );
 };
