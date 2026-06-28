@@ -1,8 +1,10 @@
 import {httpErrors} from '@fastify/sensible';
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
 import {UserRank} from '@/database/prisma/enums';
+import {hashPassword, verifyPassword} from '@/modules/auth/helper';
 import {IsProd, RefreshTokenAgeSec, TokenTypes, UserRankValue} from './const';
 import {
+    changeUserPasswordSchema,
     changeUserRankSchema,
     getCurrentUserSchema,
     loginUserSchema,
@@ -112,6 +114,26 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             if (targetRank >= callerRank || callerRank < newRank) throw httpErrors.forbidden();
 
             res.send({user: await authService.updateUser(targetId, req.body)});
+        }
+    );
+
+    fastify.patch(
+        '/change-password',
+        {schema: changeUserPasswordSchema, onRequest: fastify.authGuard(UserRank.trooper)},
+        async (req, res): Promise<void> => {
+            const id = req.user.id;
+
+            const {password, newPassword} = req.body;
+            if (password === newPassword) throw httpErrors.badRequest('New password must be different');
+
+            const user = await authService.getUserById(id);
+            if (!(await verifyPassword(password, user.password))) throw httpErrors.badRequest('Wrong password');
+
+            await authService.updateUser(id, {password: await hashPassword(newPassword)});
+            await authService.deleteAllSessions(id);
+
+            res.clearCookie('refreshToken', {path: '/auth'});
+            res.send({message: 'Password updated successfully'});
         }
     );
 };

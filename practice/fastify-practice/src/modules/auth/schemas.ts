@@ -9,11 +9,13 @@ const UserPlainPublic = Type.Object(
     Object.fromEntries(Object.entries(UserPlain.properties).filter(([key]) => key !== 'password'))
 );
 
+const passwordSchema = Type.String({minLength: 6, maxLength: 255});
+
 export const registerUserSchema = {
     body: Type.Object(
         {
             email: Type.String({pattern: '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'}),
-            password: Type.String({minLength: 6, maxLength: 255}),
+            password: passwordSchema,
             rank: Type.Optional(Type.Enum(UserRank)),
             ...createStormtrooperSchema.body.properties
         },
@@ -75,5 +77,18 @@ export const changeUserRankSchema = {
     }),
     response: {
         200: Type.Object({user: UserPlainPublic})
+    }
+};
+
+export const changeUserPasswordSchema = {
+    body: Type.Object(
+        {
+            password: passwordSchema,
+            newPassword: passwordSchema
+        },
+        {additionalProperties: false}
+    ),
+    response: {
+        200: Type.Object({message: Type.String()})
     }
 };
