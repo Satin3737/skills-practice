@@ -1,6 +1,6 @@
 import {Type} from '@fastify/type-provider-typebox';
 import {byIdPSchema} from '@/common/schemas';
-import {UserType} from '@/database/prisma/enums';
+import {UserRank} from '@/database/prisma/enums';
 import {StormtrooperPlain} from '@/database/prismabox/Stormtrooper';
 import {UserPlain} from '@/database/prismabox/User';
 import {createStormtrooperSchema} from '@/modules/stormtroopers/schemas';
@@ -14,7 +14,7 @@ export const registerUserSchema = {
         {
             email: Type.String({pattern: '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'}),
             password: Type.String({minLength: 6, maxLength: 255}),
-            type: Type.Optional(Type.Enum(UserType)),
+            rank: Type.Optional(Type.Enum(UserRank)),
             ...createStormtrooperSchema.body.properties
         },
         {additionalProperties: false}
@@ -68,10 +68,10 @@ export const updateUserSchema = {
     }
 };
 
-export const changeUserRangSchema = {
+export const changeUserRankSchema = {
     params: byIdPSchema,
     body: Type.Object({
-        type: Type.Enum(UserType)
+        rank: Type.Enum(UserRank)
     }),
     response: {
         200: Type.Object({user: UserPlainPublic})

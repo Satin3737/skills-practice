@@ -1,9 +1,9 @@
 import {httpErrors} from '@fastify/sensible';
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
-import {UserType} from '@/database/prisma/enums';
-import {IsProd, RefreshTokenAgeSec, TokenTypes, UserTypeRank} from './const';
+import {UserRank} from '@/database/prisma/enums';
+import {IsProd, RefreshTokenAgeSec, TokenTypes, UserRankValue} from './const';
 import {
-    changeUserRangSchema,
+    changeUserRankSchema,
     getCurrentUserSchema,
     loginUserSchema,
     logoutUserSchema,
@@ -22,7 +22,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     fastify.post('/login', {schema: loginUserSchema}, async (req, res): Promise<void> => {
         const user = await authService.verifyUser(req.body);
         const session = await authService.createSession(user.id);
-        const payload = {sub: user.id, type: user.type};
+        const payload = {sub: user.id, rank: user.rank};
 
         const accessToken = await res.jwtSign({
             ...payload,
@@ -59,7 +59,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         }
 
         const user = await authService.getUserById(id);
-        const accessToken = await res.jwtSign({sub: user.id, type: user.type, tokenType: TokenTypes.access});
+        const accessToken = await res.jwtSign({sub: user.id, rank: user.rank, tokenType: TokenTypes.access});
 
         res.send({token: accessToken});
     });
@@ -92,22 +92,22 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.get(
         '/me',
-        {schema: getCurrentUserSchema, onRequest: fastify.authGuard(UserType.trooper)},
+        {schema: getCurrentUserSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
             res.send({user: await authService.getCurrentUser(req.user.id)});
         }
     );
 
-    fastify.post(
-        '/:id/rang',
-        {schema: changeUserRangSchema, onRequest: fastify.authGuard(UserType.captain)},
+    fastify.patch(
+        '/:id/rank',
+        {schema: changeUserRankSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
             const targetId = req.params.id;
             const targetUser = await authService.getUserById(targetId);
 
-            const targetRank = UserTypeRank[targetUser.type];
-            const newRank = UserTypeRank[req.body.type];
-            const callerRank = UserTypeRank[req.user.type];
+            const targetRank = UserRankValue[targetUser.rank];
+            const newRank = UserRankValue[req.body.rank];
+            const callerRank = UserRankValue[req.user.rank];
 
             if (targetRank >= callerRank || callerRank < newRank) throw httpErrors.forbidden();
 

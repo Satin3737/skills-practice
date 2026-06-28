@@ -1,4 +1,4 @@
-import {UserType} from '@/database/prisma/enums';
+import {UserRank} from '@/database/prisma/enums';
 
 export const IsProd = process.env.NODE_ENV === 'production';
 
@@ -10,9 +10,9 @@ export const TokenTypes = {
     refresh: 'refresh'
 } as const;
 
-export const UserTypeRank = {
-    [UserType.trooper]: 0,
-    [UserType.captain]: 1,
-    [UserType.admiral]: 2,
-    [UserType.emperor]: 3
-} as const satisfies Record<UserType, number>;
+export const UserRankValue = {
+    [UserRank.trooper]: 0,
+    [UserRank.captain]: 1,
+    [UserRank.admiral]: 2,
+    [UserRank.emperor]: 3
+} as const satisfies Record<UserRank, number>;

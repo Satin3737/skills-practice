@@ -13,9 +13,9 @@ class AuthService {
     }
 
     public async createUser(data: IRegisterUserData): Promise<User> {
-        const {email, password, callSign, type} = data;
+        const {email, password, callSign, rank} = data;
         const hash = await hashPassword(password);
-        return this.db.user.create({data: {email, password: hash, type, stormtrooper: {create: {callSign}}}});
+        return this.db.user.create({data: {email, password: hash, rank, stormtrooper: {create: {callSign}}}});
     }
 
     public async verifyUser(data: ILoginUserData): Promise<User> {

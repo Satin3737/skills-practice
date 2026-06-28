@@ -1,5 +1,5 @@
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
-import {UserType} from '@/database/prisma/enums';
+import {UserRank} from '@/database/prisma/enums';
 import {deleteMissionSchema, getMissionSchema, getMissionsSchema, updateMissionSchema} from './schemas';
 
 const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
@@ -7,7 +7,7 @@ const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.get(
         '/',
-        {schema: getMissionsSchema, onRequest: fastify.authGuard(UserType.trooper)},
+        {schema: getMissionsSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
             res.send(await missionsService.getMissions(req.query));
         }
@@ -15,7 +15,7 @@ const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.get(
         '/:id',
-        {schema: getMissionSchema, onRequest: fastify.authGuard(UserType.trooper)},
+        {schema: getMissionSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
             res.send({mission: await missionsService.getMissionById(req.params.id)});
         }
@@ -23,7 +23,7 @@ const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.patch(
         '/:id',
-        {schema: updateMissionSchema, onRequest: fastify.authGuard(UserType.captain)},
+        {schema: updateMissionSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
             res.send({mission: await missionsService.updateMission(req.params.id, req.body)});
         }
@@ -31,7 +31,7 @@ const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.delete(
         '/:id',
-        {schema: deleteMissionSchema, onRequest: fastify.authGuard(UserType.captain)},
+        {schema: deleteMissionSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
             res.send({mission: await missionsService.deleteMission(req.params.id)});
         }

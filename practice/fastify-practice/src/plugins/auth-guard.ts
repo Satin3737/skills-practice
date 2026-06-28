@@ -1,16 +1,16 @@
 import {httpErrors} from '@fastify/sensible';
 import type {onRequestAsyncHookHandler} from 'fastify';
 import fp from 'fastify-plugin';
-import {UserType} from '@/database/prisma/enums';
-import {TokenTypes, UserTypeRank} from '@/modules/auth/const';
+import {UserRank} from '@/database/prisma/enums';
+import {TokenTypes, UserRankValue} from '@/modules/auth/const';
 
 const authGuard = fp(async fastify => {
-    fastify.decorate('authGuard', (minRank: UserType): onRequestAsyncHookHandler => {
+    fastify.decorate('authGuard', (minRank: UserRank): onRequestAsyncHookHandler => {
         return async (req): Promise<void> => {
             await req.jwtVerify();
             const user = req.user;
             if (user.tokenType !== TokenTypes.access) throw httpErrors.unauthorized('Invalid token');
-            if ((UserTypeRank[user.type] ?? -1) < UserTypeRank[minRank]) throw httpErrors.forbidden();
+            if ((UserRankValue[user.rank] ?? -1) < UserRankValue[minRank]) throw httpErrors.forbidden();
         };
     });
 });

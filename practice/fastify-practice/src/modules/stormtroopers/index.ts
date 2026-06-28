@@ -1,5 +1,5 @@
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
-import {UserType} from '@/database/prisma/enums';
+import {UserRank} from '@/database/prisma/enums';
 import {assignWeaponSchema, getStormtrooperWeaponsSchema, unassignWeaponSchema} from '@/modules/weapons/schemas';
 import {
     createStormtrooperSchema,
@@ -19,7 +19,7 @@ const stormtroopers: FastifyPluginAsyncTypebox = async (fastify): Promise<void> 
 
     fastify.post(
         '/',
-        {schema: createStormtrooperSchema, onRequest: fastify.authGuard(UserType.captain)},
+        {schema: createStormtrooperSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
             res.code(201).send({stormtrooper: await stormtroopersService.createStormtrooper(req.body)});
         }
@@ -31,7 +31,7 @@ const stormtroopers: FastifyPluginAsyncTypebox = async (fastify): Promise<void> 
 
     fastify.patch(
         '/:id',
-        {schema: updateStormtrooperSchema, onRequest: fastify.authGuard(UserType.captain)},
+        {schema: updateStormtrooperSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
             res.send({stormtrooper: await stormtroopersService.updateStormtrooper(req.params.id, req.body)});
         }
@@ -39,7 +39,7 @@ const stormtroopers: FastifyPluginAsyncTypebox = async (fastify): Promise<void> 
 
     fastify.delete(
         '/:id',
-        {schema: deleteStormtrooperSchema, onRequest: fastify.authGuard(UserType.captain)},
+        {schema: deleteStormtrooperSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
             res.send({stormtrooper: await stormtroopersService.deleteStormtrooper(req.params.id)});
         }
@@ -47,7 +47,7 @@ const stormtroopers: FastifyPluginAsyncTypebox = async (fastify): Promise<void> 
 
     fastify.get(
         '/:id/weapons',
-        {schema: getStormtrooperWeaponsSchema, onRequest: fastify.authGuard(UserType.trooper)},
+        {schema: getStormtrooperWeaponsSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
             res.send(await weaponsService.getWeaponsByStormtrooper(req.params.id, req.query));
         }
@@ -55,7 +55,7 @@ const stormtroopers: FastifyPluginAsyncTypebox = async (fastify): Promise<void> 
 
     fastify.put(
         '/:id/weapons/:weaponId',
-        {schema: assignWeaponSchema, onRequest: fastify.authGuard(UserType.trooper)},
+        {schema: assignWeaponSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
             res.send({weapon: await weaponsService.assignWeaponToStormtrooper(req.params.id, req.params.weaponId)});
         }
@@ -63,7 +63,7 @@ const stormtroopers: FastifyPluginAsyncTypebox = async (fastify): Promise<void> 
 
     fastify.delete(
         '/:id/weapons/:weaponId',
-        {schema: unassignWeaponSchema, onRequest: fastify.authGuard(UserType.trooper)},
+        {schema: unassignWeaponSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
             res.send({weapon: await weaponsService.unassignWeaponFromStormtrooper(req.params.id, req.params.weaponId)});
         }

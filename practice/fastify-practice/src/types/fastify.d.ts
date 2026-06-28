@@ -1,6 +1,6 @@
 import type {onRequestAsyncHookHandler} from 'fastify';
 import type {PrismaClient} from '@/database/prisma/client';
-import type {UserType} from '@/database/prisma/enums';
+import type {UserRank} from '@/database/prisma/enums';
 import type {IJWTPayload} from '@/modules/auth/types';
 import type MissionsService from '@/modules/missions/service';
 import type StormtrooperService from '@/modules/stormtroopers/service';
@@ -12,7 +12,7 @@ declare module 'fastify' {
         stormtrooperService: StormtrooperService;
         missionsService: MissionsService;
         weaponsService: WeaponService;
-        authGuard: (minRank: UserType) => onRequestAsyncHookHandler;
+        authGuard: (minRank: UserRank) => onRequestAsyncHookHandler;
     }
 }
 

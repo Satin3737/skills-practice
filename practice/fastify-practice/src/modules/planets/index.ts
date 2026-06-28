@@ -1,5 +1,5 @@
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
-import {UserType} from '@/database/prisma/enums';
+import {UserRank} from '@/database/prisma/enums';
 import {createMissionsForPlanetSchema, getMissionsByPlanetSchema} from '@/modules/missions/schemas';
 import PlanetsService from '@/modules/planets/service';
 import {createPlanetSchema, deletePlanetSchema, getPlanetSchema, getPlanetsSchema, updatePlanetSchema} from './schemas';
@@ -14,7 +14,7 @@ const planets: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.post(
         '/',
-        {schema: createPlanetSchema, onRequest: fastify.authGuard(UserType.emperor)},
+        {schema: createPlanetSchema, onRequest: fastify.authGuard(UserRank.emperor)},
         async (req, res): Promise<void> => {
             res.code(201).send({planet: await planetsService.createPlanet(req.body)});
         }
@@ -26,7 +26,7 @@ const planets: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.patch(
         '/:id',
-        {schema: updatePlanetSchema, onRequest: fastify.authGuard(UserType.emperor)},
+        {schema: updatePlanetSchema, onRequest: fastify.authGuard(UserRank.emperor)},
         async (req, res): Promise<void> => {
             res.send({planet: await planetsService.updatePlanet(req.params.id, req.body)});
         }
@@ -34,7 +34,7 @@ const planets: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.delete(
         '/:id',
-        {schema: deletePlanetSchema, onRequest: fastify.authGuard(UserType.emperor)},
+        {schema: deletePlanetSchema, onRequest: fastify.authGuard(UserRank.emperor)},
         async (req, res): Promise<void> => {
             res.send({planet: await planetsService.deletePlanet(req.params.id)});
         }
@@ -42,7 +42,7 @@ const planets: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.get(
         '/:id/missions',
-        {schema: getMissionsByPlanetSchema, onRequest: fastify.authGuard(UserType.trooper)},
+        {schema: getMissionsByPlanetSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
             res.send(await missionsService.getMissionsByPlanet(req.params.id, req.query));
         }
@@ -50,7 +50,7 @@ const planets: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.post(
         '/:id/missions',
-        {schema: createMissionsForPlanetSchema, onRequest: fastify.authGuard(UserType.captain)},
+        {schema: createMissionsForPlanetSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
             res.code(201).send({missions: await missionsService.createMissionsForPlanet(req.params.id, req.body)});
         }

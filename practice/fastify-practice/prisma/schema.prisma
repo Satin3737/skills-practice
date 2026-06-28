@@ -12,7 +12,7 @@ datasource db {
   provider = "postgresql"
 }
 
-enum UserType {
+enum UserRank {
   trooper
   captain
   admiral
@@ -30,7 +30,7 @@ model User {
   id             Int          @id @default(autoincrement())
   email          String       @unique
   password       String
-  type           UserType     @default(trooper)
+  rank           UserRank     @default(trooper)
   stormtrooper   Stormtrooper @relation(fields: [stormtrooperId], references: [id], onDelete: Cascade)
   stormtrooperId Int          @unique
   sessions       Session[]

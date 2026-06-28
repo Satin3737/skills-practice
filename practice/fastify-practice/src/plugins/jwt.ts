@@ -18,7 +18,7 @@ const jwtPlugin = fp<FastifyJWTOptions>(async fastify => {
         formatUser: payload => {
             return {
                 id: payload.sub,
-                type: payload.type,
+                rank: payload.rank,
                 tokenType: payload.tokenType,
                 sessionId: payload.sessionId
             };
