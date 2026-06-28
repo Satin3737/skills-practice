@@ -1,5 +1,6 @@
 import {httpErrors} from '@fastify/sensible';
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
+import {UserType} from '@/database/prisma/enums';
 import {IsProd, RefreshTokenAgeSec, TokenTypes} from './const';
 import {
     getCurrentUserSchema,
@@ -90,7 +91,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.get(
         '/me',
-        {schema: getCurrentUserSchema, onRequest: fastify.authGuard()},
+        {schema: getCurrentUserSchema, onRequest: fastify.authGuard(UserType.trooper)},
         async (req, res): Promise<void> => {
             res.send({user: await userService.getCurrentUser(req.user.id)});
         }

@@ -1,8 +1,11 @@
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
+import {UserType} from '@/database/prisma/enums';
 import {createWeaponSchema, deleteWeaponSchema, getWeaponSchema, getWeaponsSchema, updateWeaponSchema} from './schemas';
 
 const weapons: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     const weaponsService = fastify.weaponsService;
+
+    fastify.addHook('onRequest', fastify.authGuard(UserType.trooper));
 
     fastify.get('/', {schema: getWeaponsSchema}, async (req, res): Promise<void> => {
         res.send(await weaponsService.getWeapons(req.query));

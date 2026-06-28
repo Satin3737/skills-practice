@@ -1,4 +1,5 @@
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
+import {UserType} from '@/database/prisma/enums';
 import {assignWeaponSchema, getStormtrooperWeaponsSchema, unassignWeaponSchema} from '@/modules/weapons/schemas';
 import {
     createStormtrooperSchema,
@@ -16,33 +17,57 @@ const stormtroopers: FastifyPluginAsyncTypebox = async (fastify): Promise<void> 
         res.send(await stormtroopersService.getStormtroopers(req.query));
     });
 
-    fastify.post('/', {schema: createStormtrooperSchema}, async (req, res): Promise<void> => {
-        res.code(201).send({stormtrooper: await stormtroopersService.createStormtrooper(req.body)});
-    });
+    fastify.post(
+        '/',
+        {schema: createStormtrooperSchema, onRequest: fastify.authGuard(UserType.captain)},
+        async (req, res): Promise<void> => {
+            res.code(201).send({stormtrooper: await stormtroopersService.createStormtrooper(req.body)});
+        }
+    );
 
     fastify.get('/:id', {schema: getStormtrooperSchema}, async (req, res): Promise<void> => {
         res.send({stormtrooper: await stormtroopersService.getStormtrooperById(req.params.id)});
     });
 
-    fastify.patch('/:id', {schema: updateStormtrooperSchema}, async (req, res): Promise<void> => {
-        res.send({stormtrooper: await stormtroopersService.updateStormtrooper(req.params.id, req.body)});
-    });
+    fastify.patch(
+        '/:id',
+        {schema: updateStormtrooperSchema, onRequest: fastify.authGuard(UserType.captain)},
+        async (req, res): Promise<void> => {
+            res.send({stormtrooper: await stormtroopersService.updateStormtrooper(req.params.id, req.body)});
+        }
+    );
 
-    fastify.delete('/:id', {schema: deleteStormtrooperSchema}, async (req, res): Promise<void> => {
-        res.send({stormtrooper: await stormtroopersService.deleteStormtrooper(req.params.id)});
-    });
+    fastify.delete(
+        '/:id',
+        {schema: deleteStormtrooperSchema, onRequest: fastify.authGuard(UserType.captain)},
+        async (req, res): Promise<void> => {
+            res.send({stormtrooper: await stormtroopersService.deleteStormtrooper(req.params.id)});
+        }
+    );
 
-    fastify.get('/:id/weapons', {schema: getStormtrooperWeaponsSchema}, async (req, res): Promise<void> => {
-        res.send(await weaponsService.getWeaponsByStormtrooper(req.params.id, req.query));
-    });
+    fastify.get(
+        '/:id/weapons',
+        {schema: getStormtrooperWeaponsSchema, onRequest: fastify.authGuard(UserType.trooper)},
+        async (req, res): Promise<void> => {
+            res.send(await weaponsService.getWeaponsByStormtrooper(req.params.id, req.query));
+        }
+    );
 
-    fastify.put('/:id/weapons/:weaponId', {schema: assignWeaponSchema}, async (req, res): Promise<void> => {
-        res.send({weapon: await weaponsService.assignWeaponToStormtrooper(req.params.id, req.params.weaponId)});
-    });
+    fastify.put(
+        '/:id/weapons/:weaponId',
+        {schema: assignWeaponSchema, onRequest: fastify.authGuard(UserType.trooper)},
+        async (req, res): Promise<void> => {
+            res.send({weapon: await weaponsService.assignWeaponToStormtrooper(req.params.id, req.params.weaponId)});
+        }
+    );
 
-    fastify.delete('/:id/weapons/:weaponId', {schema: unassignWeaponSchema}, async (req, res): Promise<void> => {
-        res.send({weapon: await weaponsService.unassignWeaponFromStormtrooper(req.params.id, req.params.weaponId)});
-    });
+    fastify.delete(
+        '/:id/weapons/:weaponId',
+        {schema: unassignWeaponSchema, onRequest: fastify.authGuard(UserType.trooper)},
+        async (req, res): Promise<void> => {
+            res.send({weapon: await weaponsService.unassignWeaponFromStormtrooper(req.params.id, req.params.weaponId)});
+        }
+    );
 };
 
 export default stormtroopers;

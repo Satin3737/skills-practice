@@ -12,7 +12,7 @@ declare module 'fastify' {
         stormtrooperService: StormtrooperService;
         missionsService: MissionsService;
         weaponsService: WeaponService;
-        authGuard: (minRank?: UserType) => onRequestAsyncHookHandler;
+        authGuard: (minRank: UserType) => onRequestAsyncHookHandler;
     }
 }
 

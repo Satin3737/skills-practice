@@ -5,7 +5,7 @@ import {UserType} from '@/database/prisma/enums';
 import {TokenTypes, UserTypeRank} from '@/modules/auth/const';
 
 const authGuard = fp(async fastify => {
-    fastify.decorate('authGuard', (minRank: UserType = UserType.trooper): onRequestAsyncHookHandler => {
+    fastify.decorate('authGuard', (minRank: UserType): onRequestAsyncHookHandler => {
         return async (req): Promise<void> => {
             await req.jwtVerify();
             const user = req.user;
