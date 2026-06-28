@@ -1,8 +1,9 @@
 import {httpErrors} from '@fastify/sensible';
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
 import {UserType} from '@/database/prisma/enums';
-import {IsProd, RefreshTokenAgeSec, TokenTypes} from './const';
+import {IsProd, RefreshTokenAgeSec, TokenTypes, UserTypeRank} from './const';
 import {
+    changeUserRangSchema,
     getCurrentUserSchema,
     loginUserSchema,
     logoutUserSchema,
@@ -94,6 +95,23 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         {schema: getCurrentUserSchema, onRequest: fastify.authGuard(UserType.trooper)},
         async (req, res): Promise<void> => {
             res.send({user: await authService.getCurrentUser(req.user.id)});
+        }
+    );
+
+    fastify.post(
+        '/:id/rang',
+        {schema: changeUserRangSchema, onRequest: fastify.authGuard(UserType.captain)},
+        async (req, res): Promise<void> => {
+            const targetId = req.params.id;
+            const targetUser = await authService.getUserById(targetId);
+
+            const targetRank = UserTypeRank[targetUser.type];
+            const newRank = UserTypeRank[req.body.type];
+            const callerRank = UserTypeRank[req.user.type];
+
+            if (targetRank >= callerRank || callerRank < newRank) throw httpErrors.forbidden();
+
+            res.send({user: await authService.updateUser(targetId, req.body)});
         }
     );
 };

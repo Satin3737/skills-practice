@@ -1,4 +1,5 @@
 import {Type} from '@fastify/type-provider-typebox';
+import {byIdPSchema} from '@/common/schemas';
 import {UserType} from '@/database/prisma/enums';
 import {StormtrooperPlain} from '@/database/prismabox/Stormtrooper';
 import {UserPlain} from '@/database/prismabox/User';
@@ -56,5 +57,23 @@ export const getCurrentUserSchema = {
         200: Type.Object({
             user: Type.Object({...UserPlainPublic.properties, stormtrooper: StormtrooperPlain})
         })
+    }
+};
+
+export const updateUserSchema = {
+    params: byIdPSchema,
+    body: Type.Partial(registerUserSchema.body, {minProperties: 1}),
+    response: {
+        200: Type.Object({user: UserPlainPublic})
+    }
+};
+
+export const changeUserRangSchema = {
+    params: byIdPSchema,
+    body: Type.Object({
+        type: Type.Enum(UserType)
+    }),
+    response: {
+        200: Type.Object({user: UserPlainPublic})
     }
 };
