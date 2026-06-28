@@ -1,7 +1,5 @@
 import {UserRank} from '@/database/prisma/enums';
 
-export const IsProd = process.env.NODE_ENV === 'production';
-
 export const AccessTokenAgeSec = 60 * 15;
 export const RefreshTokenAgeSec = 60 * 60 * 24;
 

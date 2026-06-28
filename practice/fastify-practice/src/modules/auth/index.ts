@@ -1,8 +1,9 @@
 import {httpErrors} from '@fastify/sensible';
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
+import {IsProd} from '@/common/const';
 import {UserRank} from '@/database/prisma/enums';
 import {hashPassword, verifyPassword} from '@/modules/auth/helper';
-import {IsProd, RefreshTokenAgeSec, TokenTypes, UserRankValue} from './const';
+import {RefreshTokenAgeSec, TokenTypes, UserRankValue} from './const';
 import {
     changeUserPasswordSchema,
     changeUserRankSchema,
