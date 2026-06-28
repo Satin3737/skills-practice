@@ -1,5 +1,6 @@
 import jwt, {type FastifyJWTOptions} from '@fastify/jwt';
 import fp from 'fastify-plugin';
+import {AccessTokenAgeSec} from '@/modules/auth/const';
 
 const jwtPlugin = fp<FastifyJWTOptions>(async fastify => {
     const secret = process.env.JWT_SECRET;
@@ -12,7 +13,7 @@ const jwtPlugin = fp<FastifyJWTOptions>(async fastify => {
             signed: false
         },
         sign: {
-            expiresIn: '1m'
+            expiresIn: AccessTokenAgeSec
         },
         formatUser: payload => {
             return {

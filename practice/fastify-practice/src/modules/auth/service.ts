@@ -3,7 +3,7 @@ import type {PrismaClient, Session, User} from '@/database/prisma/client';
 import type {BatchPayload} from '@/database/prisma/internal/prismaNamespace';
 import {RefreshTokenAgeSec} from './const';
 import {hashPassword, verifyPassword} from './helper';
-import type {ILoginUserData, IRegisterUserData} from './types';
+import type {ILoginUserData, IRegisterUserData, IUserWithStormtrooper} from './types';
 
 class UserService {
     private readonly db: PrismaClient;
@@ -27,6 +27,10 @@ class UserService {
         }
 
         return user;
+    }
+
+    public async getCurrentUser(id: number): Promise<IUserWithStormtrooper> {
+        return this.db.user.findUniqueOrThrow({where: {id}, include: {stormtrooper: true}});
     }
 
     public getUserById(id: number): Promise<User> {

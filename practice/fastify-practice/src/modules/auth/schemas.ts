@@ -1,7 +1,12 @@
 import {Type} from '@fastify/type-provider-typebox';
 import {UserType} from '@/database/prisma/enums';
+import {StormtrooperPlain} from '@/database/prismabox/Stormtrooper';
 import {UserPlain} from '@/database/prismabox/User';
 import {createStormtrooperSchema} from '@/modules/stormtroopers/schemas';
+
+const UserPlainPublic = Type.Object(
+    Object.fromEntries(Object.entries(UserPlain.properties).filter(([key]) => key !== 'password'))
+);
 
 export const registerUserSchema = {
     body: Type.Object(
@@ -14,7 +19,7 @@ export const registerUserSchema = {
         {additionalProperties: false}
     ),
     response: {
-        201: Type.Object({user: Type.Omit(UserPlain, ['password'])})
+        201: Type.Object({user: UserPlainPublic})
     }
 };
 
@@ -22,7 +27,6 @@ export const loginUserSchema = {
     body: Type.Pick(registerUserSchema.body, ['email', 'password']),
     response: {
         200: Type.Object({
-            user: Type.Omit(UserPlain, ['password']),
             token: Type.String()
         }),
         401: Type.Object({
@@ -43,6 +47,14 @@ export const logoutUserSchema = {
     response: {
         200: Type.Object({
             message: Type.String()
+        })
+    }
+};
+
+export const getCurrentUserSchema = {
+    response: {
+        200: Type.Object({
+            user: Type.Object({...UserPlainPublic.properties, stormtrooper: StormtrooperPlain})
         })
     }
 };

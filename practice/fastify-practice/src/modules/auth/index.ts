@@ -1,9 +1,14 @@
 import {httpErrors} from '@fastify/sensible';
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
-import {IsProd, RefreshTokenAgeSec} from './const';
-import {loginUserSchema, logoutUserSchema, refreshTokenSchema, registerUserSchema} from './schemas';
+import {IsProd, RefreshTokenAgeSec, TokenTypes} from './const';
+import {
+    getCurrentUserSchema,
+    loginUserSchema,
+    logoutUserSchema,
+    refreshTokenSchema,
+    registerUserSchema
+} from './schemas';
 import UserService from './service';
-import {TokenTypes} from './types';
 
 const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     const userService = new UserService(fastify.prisma);
@@ -35,7 +40,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             maxAge: RefreshTokenAgeSec
         });
 
-        res.send({token: accessToken, user});
+        res.send({token: accessToken});
     });
 
     fastify.post('/refresh', {schema: refreshTokenSchema}, async (req, res): Promise<void> => {
@@ -82,6 +87,14 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         res.clearCookie('refreshToken', {path: '/auth'});
         res.send({message: 'Logout successfully'});
     });
+
+    fastify.get(
+        '/me',
+        {schema: getCurrentUserSchema, onRequest: fastify.authGuard()},
+        async (req, res): Promise<void> => {
+            res.send({user: await userService.getCurrentUser(req.user.id)});
+        }
+    );
 };
 
 export default auth;
