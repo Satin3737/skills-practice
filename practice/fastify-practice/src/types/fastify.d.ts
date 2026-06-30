@@ -5,6 +5,7 @@ import type {IJWTPayload} from '@/modules/auth/types';
 import type MissionsService from '@/modules/missions/service';
 import type StormtrooperService from '@/modules/stormtroopers/service';
 import type WeaponService from '@/modules/weapons/service';
+import type {IEnvConfig} from '@/plugins/env';
 
 declare module 'fastify' {
     interface FastifyInstance {
@@ -13,6 +14,7 @@ declare module 'fastify' {
         missionsService: MissionsService;
         weaponsService: WeaponService;
         authGuard: (minRank: UserRank) => onRequestAsyncHookHandler;
+        config: IEnvConfig;
     }
 }
 

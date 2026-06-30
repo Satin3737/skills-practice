@@ -9,7 +9,7 @@ const servicesPlugin = fp(
         fastify.decorate('missionsService', new MissionsService(fastify.prisma));
         fastify.decorate('weaponsService', new WeaponService(fastify.prisma));
     },
-    {dependencies: ['prisma']}
+    {name: 'services', dependencies: ['prisma']}
 );
 
 export default servicesPlugin;

@@ -6,7 +6,7 @@ const prismaPlugin = fp(
     async fastify => {
         await fastify.register(fastifyPrisma, {client: Database});
     },
-    {name: 'prisma'}
+    {name: 'prisma', dependencies: ['env']}
 );
 
 export default prismaPlugin;
