@@ -10,8 +10,8 @@ const fastify = Fastify({
     ajv: {customOptions: {allErrors: true}}
 });
 
-await fastify.register(autoload, {dir: path.join(srcDir, 'plugins')});
-await fastify.register(autoload, {dir: path.join(srcDir, 'modules')});
+await fastify.register(autoload, {dir: path.join(srcDir, 'plugins'), maxDepth: 1});
+await fastify.register(autoload, {dir: path.join(srcDir, 'modules'), maxDepth: 1});
 
 const startServer = async () => {
     try {
