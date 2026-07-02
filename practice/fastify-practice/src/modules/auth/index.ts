@@ -22,14 +22,22 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     registerAuthJobs(fastify, authService);
 
-    fastify.post('/register', {schema: registerUserSchema}, async (req, res): Promise<void> => {
-        res.code(201).send({user: await authService.createUser(req.body)});
-    });
+    fastify.post(
+        '/register',
+        {schema: registerUserSchema, config: {rateLimit: {max: 5}}},
+        async (req, res): Promise<void> => {
+            res.code(201).send({user: await authService.createUser(req.body)});
+        }
+    );
 
-    fastify.post('/login', {schema: loginUserSchema}, async (req, res): Promise<void> => {
-        const user = await authService.verifyUser(req.body);
-        res.send({token: await startSession(res, authService, user)});
-    });
+    fastify.post(
+        '/login',
+        {schema: loginUserSchema, config: {rateLimit: {max: 5}}},
+        async (req, res): Promise<void> => {
+            const user = await authService.verifyUser(req.body);
+            res.send({token: await startSession(res, authService, user)});
+        }
+    );
 
     fastify.get('/github/callback', async (req, res): Promise<void> => {
         const {token} = await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
@@ -43,24 +51,28 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         res.send({token: await startSession(res, authService, user)});
     });
 
-    fastify.post('/refresh', {schema: refreshTokenSchema}, async (req, res): Promise<void> => {
-        await req.jwtVerify({onlyCookie: true});
-        const {id, tokenType, sessionId} = req.user;
+    fastify.post(
+        '/refresh',
+        {schema: refreshTokenSchema, config: {rateLimit: {max: 5}}},
+        async (req, res): Promise<void> => {
+            await req.jwtVerify({onlyCookie: true});
+            const {id, tokenType, sessionId} = req.user;
 
-        if (tokenType !== TokenTypes.refresh || !sessionId) throw httpErrors.unauthorized();
+            if (tokenType !== TokenTypes.refresh || !sessionId) throw httpErrors.unauthorized();
 
-        const session = await authService.getSessionById(sessionId);
+            const session = await authService.getSessionById(sessionId);
 
-        if (!session || session.expiresAt < new Date()) {
-            !!session && (await authService.deleteSession(sessionId));
-            throw httpErrors.unauthorized();
+            if (!session || session.expiresAt < new Date()) {
+                !!session && (await authService.deleteSession(sessionId));
+                throw httpErrors.unauthorized();
+            }
+
+            const user = await authService.getUserById(id);
+            const accessToken = await res.jwtSign({sub: user.id, rank: user.rank, tokenType: TokenTypes.access});
+
+            res.send({token: accessToken});
         }
-
-        const user = await authService.getUserById(id);
-        const accessToken = await res.jwtSign({sub: user.id, rank: user.rank, tokenType: TokenTypes.access});
-
-        res.send({token: accessToken});
-    });
+    );
 
     fastify.post('/logout', {schema: logoutUserSchema}, async (req, res): Promise<void> => {
         try {
@@ -115,7 +127,11 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.patch(
         '/change-password',
-        {schema: changeUserPasswordSchema, onRequest: fastify.authGuard(UserRank.trooper)},
+        {
+            schema: changeUserPasswordSchema,
+            config: {rateLimit: {max: 5}},
+            onRequest: fastify.authGuard(UserRank.trooper)
+        },
         async (req, res): Promise<void> => {
             const id = req.user.id;
             const user = await authService.getUserById(id);
