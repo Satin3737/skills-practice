@@ -1,14 +1,12 @@
+import type {Token} from '@fastify/oauth2';
 import {httpErrors} from '@fastify/sensible';
 import BaseOAuthStrategy from './base-oauth-strategy';
-import type {IGithubUserData, IGithubUserEmailData, IOAuthLoginData, IOAuthStrategyParams} from './types';
+import type {IGithubUserData, IGithubUserEmailData, IOAuthLoginData} from './types';
 
 class GithubStrategy extends BaseOAuthStrategy {
     private readonly baseUrl: string = 'https://api.github.com';
 
-    public async authenticate({
-        access_token,
-        token_type
-    }: IOAuthStrategyParams[typeof this.provider]): Promise<IOAuthLoginData> {
+    public async authenticate({access_token, token_type}: Token): Promise<IOAuthLoginData> {
         const authHeader = `${token_type} ${access_token}`;
         const res = await this.fetchGhUserData<IGithubUserData>('/user', authHeader);
 

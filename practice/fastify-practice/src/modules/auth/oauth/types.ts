@@ -1,12 +1,3 @@
-import {AccountProvider} from '@/database/prisma/enums';
-
-export interface IOAuthStrategyParams {
-    [AccountProvider.github]: {
-        access_token: string;
-        token_type: string;
-    };
-}
-
 export interface IGithubUserData {
     id: number;
     login: string;
@@ -18,6 +9,13 @@ export interface IGithubUserEmailData {
     email: string;
     primary: boolean;
     verified: boolean;
+}
+
+export interface IGoogleUserData {
+    sub: string;
+    name?: string;
+    email: string;
+    email_verified: boolean;
 }
 
 export interface IOAuthLoginData {

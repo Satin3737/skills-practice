@@ -1,6 +1,7 @@
+import type {Token} from '@fastify/oauth2';
 import type {PrismaClient} from '@/database/prisma/client';
 import type {AccountProvider} from '@/database/prisma/enums';
-import type {IOAuthLoginData, IOAuthStrategyParams} from './types';
+import type {IOAuthLoginData} from './types';
 
 abstract class BaseOAuthStrategy {
     protected readonly db: PrismaClient;
@@ -11,7 +12,7 @@ abstract class BaseOAuthStrategy {
         this.provider = provider;
     }
 
-    public abstract authenticate(params: IOAuthStrategyParams[typeof this.provider]): Promise<IOAuthLoginData>;
+    public abstract authenticate(params: Token): Promise<IOAuthLoginData>;
 }
 
 export default BaseOAuthStrategy;

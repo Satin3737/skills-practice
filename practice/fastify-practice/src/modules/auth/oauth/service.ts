@@ -1,19 +1,23 @@
+import type {Token} from '@fastify/oauth2';
 import type {PrismaClient, User} from '@/database/prisma/client';
 import {AccountProvider} from '@/database/prisma/enums';
 import type BaseOAuthStrategy from './base-oauth-strategy';
 import GithubStrategy from './github-strategy';
-import type {IOAuthLoginData, IOAuthStrategyParams} from './types';
+import GoogleStrategy from './google-strategy';
+import type {IOAuthLoginData} from './types';
 
 class OAuthService {
     private readonly db: PrismaClient;
     private readonly githubStrategy: GithubStrategy;
+    private readonly googleStrategy: GoogleStrategy;
 
     public constructor(db: PrismaClient) {
         this.db = db;
         this.githubStrategy = new GithubStrategy(this.db, AccountProvider.github);
+        this.googleStrategy = new GoogleStrategy(this.db, AccountProvider.google);
     }
 
-    public async login(provider: AccountProvider, params: IOAuthStrategyParams[typeof provider]): Promise<User> {
+    public async login(provider: AccountProvider, params: Token): Promise<User> {
         const strategy = this.getStrategyFor(provider);
         const accountData = await strategy.authenticate(params);
         return this.findOrCreateUser(provider, accountData);
@@ -23,6 +27,8 @@ class OAuthService {
         switch (provider) {
             case AccountProvider.github:
                 return this.githubStrategy;
+            case AccountProvider.google:
+                return this.googleStrategy;
         }
     }
 

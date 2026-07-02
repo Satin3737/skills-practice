@@ -34,6 +34,12 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         res.send({token: await startSession(res, authService, user)});
     });
 
+    fastify.get('/google/callback', async (req, res): Promise<void> => {
+        const {token} = await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
+        const user = await oAuthService.login(AccountProvider.google, token);
+        res.send({token: await startSession(res, authService, user)});
+    });
+
     fastify.post('/refresh', {schema: refreshTokenSchema}, async (req, res): Promise<void> => {
         await req.jwtVerify({onlyCookie: true});
         const {id, tokenType, sessionId} = req.user;
