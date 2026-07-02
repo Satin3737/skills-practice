@@ -1,3 +1,4 @@
+import type {OAuth2Namespace} from '@fastify/oauth2';
 import type {onRequestAsyncHookHandler} from 'fastify';
 import type {PrismaClient} from '@/database/prisma/client';
 import type {UserRank} from '@/database/prisma/enums';
@@ -15,6 +16,7 @@ declare module 'fastify' {
         weaponsService: WeaponService;
         authGuard: (minRank: UserRank) => onRequestAsyncHookHandler;
         config: IEnvConfig;
+        githubOAuth2: OAuth2Namespace;
     }
 }
 
