@@ -56,6 +56,10 @@ class AuthService {
     public deleteAllSessions(userId: number): Promise<BatchPayload> {
         return this.db.session.deleteMany({where: {userId}});
     }
+
+    public deleteExpiredSessions(): Promise<BatchPayload> {
+        return this.db.session.deleteMany({where: {expiresAt: {lt: new Date()}}});
+    }
 }
 
 export default AuthService;

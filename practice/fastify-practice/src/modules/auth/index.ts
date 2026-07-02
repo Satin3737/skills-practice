@@ -3,6 +3,7 @@ import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
 import {AccountProvider, UserRank} from '@/database/prisma/enums';
 import {RefreshCookieName, TokenTypes, UserRankValue, refreshCookieOptions} from './const';
 import {hashPassword, startSession, verifyPassword} from './helper';
+import {registerAuthJobs} from './jobs';
 import OAuthService from './oauth/service';
 import {
     changeUserPasswordSchema,
@@ -18,6 +19,8 @@ import AuthService from './service';
 const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     const authService = new AuthService(fastify.prisma);
     const oAuthService = new OAuthService(fastify.prisma);
+
+    registerAuthJobs(fastify, authService);
 
     fastify.post('/register', {schema: registerUserSchema}, async (req, res): Promise<void> => {
         res.code(201).send({user: await authService.createUser(req.body)});

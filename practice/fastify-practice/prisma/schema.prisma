@@ -61,6 +61,7 @@ model Session {
   createdAt DateTime @default(now())
 
   @@index([userId])
+  @@index([expiresAt])
 }
 
 model Stormtrooper {
