@@ -1,9 +1,9 @@
 import {httpErrors} from '@fastify/sensible';
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
-import {IsProd} from '@/common/const';
-import {UserRank} from '@/database/prisma/enums';
-import {hashPassword, verifyPassword} from '@/modules/auth/helper';
-import {RefreshTokenAgeSec, TokenTypes, UserRankValue} from './const';
+import {AccountProvider, UserRank} from '@/database/prisma/enums';
+import {RefreshCookieName, TokenTypes, UserRankValue, refreshCookieOptions} from './const';
+import {hashPassword, startSession, verifyPassword} from './helper';
+import OAuthService from './oauth/service';
 import {
     changeUserPasswordSchema,
     changeUserRankSchema,
@@ -17,6 +17,7 @@ import AuthService from './service';
 
 const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     const authService = new AuthService(fastify.prisma);
+    const oAuthService = new OAuthService(fastify.prisma);
 
     fastify.post('/register', {schema: registerUserSchema}, async (req, res): Promise<void> => {
         res.code(201).send({user: await authService.createUser(req.body)});
@@ -24,28 +25,13 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
     fastify.post('/login', {schema: loginUserSchema}, async (req, res): Promise<void> => {
         const user = await authService.verifyUser(req.body);
-        const session = await authService.createSession(user.id);
-        const payload = {sub: user.id, rank: user.rank};
+        res.send({token: await startSession(res, authService, user)});
+    });
 
-        const accessToken = await res.jwtSign({
-            ...payload,
-            tokenType: TokenTypes.access
-        });
-
-        const refreshToken = await res.jwtSign(
-            {...payload, tokenType: TokenTypes.refresh, sessionId: session.id},
-            {expiresIn: RefreshTokenAgeSec}
-        );
-
-        res.setCookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: IsProd,
-            sameSite: 'strict',
-            path: '/auth',
-            maxAge: RefreshTokenAgeSec
-        });
-
-        res.send({token: accessToken});
+    fastify.get('/github/callback', async (req, res): Promise<void> => {
+        const {token} = await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
+        const user = await oAuthService.login(AccountProvider.github, token);
+        res.send({token: await startSession(res, authService, user)});
     });
 
     fastify.post('/refresh', {schema: refreshTokenSchema}, async (req, res): Promise<void> => {
@@ -76,7 +62,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             fastify.log.info('Force logout');
         }
 
-        res.clearCookie('refreshToken', {path: '/auth'});
+        res.clearCookie(RefreshCookieName, {path: refreshCookieOptions.path});
         res.send({message: 'Logout successfully'});
     });
 
@@ -89,7 +75,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             fastify.log.info('Force logout');
         }
 
-        res.clearCookie('refreshToken', {path: '/auth'});
+        res.clearCookie(RefreshCookieName, {path: refreshCookieOptions.path});
         res.send({message: 'Logout successfully'});
     });
 
@@ -123,17 +109,23 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         {schema: changeUserPasswordSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
             const id = req.user.id;
-
-            const {password, newPassword} = req.body;
-            if (password === newPassword) throw httpErrors.badRequest('New password must be different');
-
             const user = await authService.getUserById(id);
-            if (!(await verifyPassword(password, user.password))) throw httpErrors.badRequest('Wrong password');
+            const {password, newPassword} = req.body;
 
-            await authService.updateUser(id, {password: await hashPassword(newPassword)});
-            await authService.deleteAllSessions(id);
+            if (!user.password) {
+                await authService.updateUser(id, {password: await hashPassword(newPassword)});
+            } else {
+                if (!password) throw httpErrors.badRequest('Current password is required');
+                if (password === newPassword) throw httpErrors.badRequest('New password must be different');
 
-            res.clearCookie('refreshToken', {path: '/auth'});
+                if (!(await verifyPassword(password, user.password))) throw httpErrors.badRequest('Wrong password');
+
+                await authService.updateUser(id, {password: await hashPassword(newPassword)});
+                await authService.deleteAllSessions(id);
+
+                res.clearCookie(RefreshCookieName, {path: refreshCookieOptions.path});
+            }
+
             res.send({message: 'Password updated successfully'});
         }
     );

@@ -14,3 +14,12 @@ export const UserRankValue = {
     [UserRank.admiral]: 2,
     [UserRank.emperor]: 3
 } as const satisfies Record<UserRank, number>;
+
+export const RefreshCookieName = 'refreshToken';
+
+export const refreshCookieOptions = {
+    httpOnly: true,
+    sameSite: 'strict',
+    path: '/auth',
+    maxAge: RefreshTokenAgeSec
+} as const;

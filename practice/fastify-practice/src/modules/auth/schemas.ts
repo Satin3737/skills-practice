@@ -83,7 +83,7 @@ export const changeUserRankSchema = {
 export const changeUserPasswordSchema = {
     body: Type.Object(
         {
-            password: passwordSchema,
+            password: Type.Optional(passwordSchema),
             newPassword: passwordSchema
         },
         {additionalProperties: false}
