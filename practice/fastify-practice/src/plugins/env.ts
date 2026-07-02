@@ -14,7 +14,9 @@ const schema = Type.Object({
     CORS_ORIGIN: Type.String(),
     DATABASE_URL: Type.String(),
     JWT_SECRET: Type.String(),
-    JWT_EXPIRES_IN: Type.Number()
+    JWT_EXPIRES_IN: Type.Number(),
+    GITHUB_CLIENT_ID: Type.String(),
+    GITHUB_CLIENT_SECRET: Type.String()
 });
 
 export type IEnvironment = (typeof Environment)[keyof typeof Environment];
