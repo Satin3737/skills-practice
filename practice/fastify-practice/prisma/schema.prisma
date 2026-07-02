@@ -28,6 +28,7 @@ enum PlanetType {
 
 enum AccountProvider {
   github
+  google
 }
 
 model User {
