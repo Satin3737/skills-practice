@@ -17,6 +17,7 @@ declare module 'fastify' {
         authGuard: (minRank: UserRank) => onRequestAsyncHookHandler;
         config: IEnvConfig;
         githubOAuth2: OAuth2Namespace;
+        googleOAuth2: OAuth2Namespace;
     }
 }
 
