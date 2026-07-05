@@ -1,5 +1,6 @@
 import type {OAuth2Namespace} from '@fastify/oauth2';
 import type {onRequestAsyncHookHandler} from 'fastify';
+import type Redis from 'ioredis';
 import type {PrismaClient} from '@/database/prisma/client';
 import type {UserRank} from '@/database/prisma/enums';
 import type {IJWTPayload} from '@/modules/auth/types';
@@ -18,6 +19,8 @@ declare module 'fastify' {
         config: IEnvConfig;
         githubOAuth2: OAuth2Namespace;
         googleOAuth2: OAuth2Namespace;
+        redisFailFast: Redis;
+        redisSub: Redis;
     }
 }
 
