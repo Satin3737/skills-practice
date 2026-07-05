@@ -1,9 +1,9 @@
 import type {Token} from '@fastify/oauth2';
 import type {PrismaClient, User} from '@/database/prisma/client';
 import {AccountProvider} from '@/database/prisma/enums';
-import type BaseOAuthStrategy from './base-oauth-strategy';
-import GithubStrategy from './github-strategy';
-import GoogleStrategy from './google-strategy';
+import type BaseOAuthStrategy from './strategies/base';
+import GithubStrategy from './strategies/github';
+import GoogleStrategy from './strategies/google';
 import type {IOAuthLoginData} from './types';
 
 class OAuthService {

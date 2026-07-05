@@ -1,7 +1,7 @@
 import type {Token} from '@fastify/oauth2';
 import {httpErrors} from '@fastify/sensible';
-import BaseOAuthStrategy from './base-oauth-strategy';
-import type {IGithubUserData, IGithubUserEmailData, IOAuthLoginData} from './types';
+import type {IGithubUserData, IGithubUserEmailData, IOAuthLoginData} from '../types';
+import BaseOAuthStrategy from './base';
 
 class GithubStrategy extends BaseOAuthStrategy {
     private readonly baseUrl: string = 'https://api.github.com';

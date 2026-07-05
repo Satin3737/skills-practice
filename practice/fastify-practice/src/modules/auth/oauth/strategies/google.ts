@@ -1,7 +1,7 @@
 import type {Token} from '@fastify/oauth2';
 import {httpErrors} from '@fastify/sensible';
-import BaseOAuthStrategy from './base-oauth-strategy';
-import type {IGoogleUserData, IOAuthLoginData} from './types';
+import type {IGoogleUserData, IOAuthLoginData} from '../types';
+import BaseOAuthStrategy from './base';
 
 class GoogleStrategy extends BaseOAuthStrategy {
     private readonly baseUrl: string = 'https://www.googleapis.com/oauth2/v3';
