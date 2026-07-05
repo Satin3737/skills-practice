@@ -5,10 +5,12 @@ const rateLimitPlugin = fp<FastifyRateLimitOptions>(
     async fastify => {
         await fastify.register(rateLimit, {
             max: 100,
-            timeWindow: 60_000
+            timeWindow: 60_000,
+            redis: fastify.redisFailFast,
+            skipOnError: true
         });
     },
-    {name: 'rate-limit'}
+    {name: 'rate-limit', dependencies: ['redis']}
 );
 
 export default rateLimitPlugin;
