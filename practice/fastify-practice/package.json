@@ -26,6 +26,7 @@
         "@fastify/jwt": "^10.1.0",
         "@fastify/oauth2": "^8.2.0",
         "@fastify/rate-limit": "^11.1.0",
+        "@fastify/redis": "^8.0.0",
         "@fastify/schedule": "^6.0.0",
         "@fastify/sensible": "^6.0.4",
         "@fastify/type-provider-typebox": "^6.1.0",
@@ -37,6 +38,7 @@
         "fastify": "^5.9.0",
         "fastify-cli": "^8.0.0",
         "fastify-plugin": "^6.0.0",
+        "ioredis": "^5.11.1",
         "pg": "^8.22.0",
         "prismabox": "^1.1.26",
         "toad-scheduler": "^4.0.1"
