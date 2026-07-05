@@ -1,12 +1,7 @@
 import env, {type FastifyEnvOptions} from '@fastify/env';
 import {type Static, Type} from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
-
-export const Environment = {
-    development: 'development',
-    production: 'production',
-    test: 'test'
-} as const;
+import {Environment} from '@/common/const';
 
 const schema = Type.Object({
     PORT: Type.Number({default: 3000}),
@@ -18,10 +13,10 @@ const schema = Type.Object({
     GITHUB_CLIENT_ID: Type.String(),
     GITHUB_CLIENT_SECRET: Type.String(),
     GOOGLE_CLIENT_ID: Type.String(),
-    GOOGLE_CLIENT_SECRET: Type.String()
+    GOOGLE_CLIENT_SECRET: Type.String(),
+    REDIS_URL: Type.String()
 });
 
-export type IEnvironment = (typeof Environment)[keyof typeof Environment];
 export type IEnvConfig = Static<typeof schema>;
 
 const envPlugin = fp<FastifyEnvOptions>(

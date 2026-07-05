@@ -2,10 +2,10 @@ import {randomBytes, scrypt} from 'crypto';
 import type {FastifyReply} from 'fastify';
 import {timingSafeEqual} from 'node:crypto';
 import {promisify} from 'util';
+import {Environment} from '@/common/const';
 import type {User} from '@/database/prisma/client';
-import {Environment} from '@/plugins/env';
 import {RefreshTokenAgeSec, TokenTypes, refreshCookieOptions} from './const';
-import type AuthService from './service';
+import type SessionsService from './sessions-service';
 
 const scryptAsync = promisify(scrypt);
 const keyLen = 64;
@@ -24,8 +24,12 @@ export const verifyPassword = async (password: string, stored: string | null): P
     return hash.length === derived.length && timingSafeEqual(hash, derived);
 };
 
-export const startSession = async (res: FastifyReply, authService: AuthService, user: User): Promise<string> => {
-    const session = await authService.createSession(user.id);
+export const startSession = async (
+    res: FastifyReply,
+    sessionsService: SessionsService,
+    user: User
+): Promise<string> => {
+    const session = await sessionsService.createSession(user.id);
     const payload = {sub: user.id, rank: user.rank};
 
     const accessToken = await res.jwtSign({

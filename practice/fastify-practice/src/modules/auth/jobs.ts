@@ -1,11 +1,11 @@
 import type {FastifyInstance} from 'fastify';
 import {AsyncTask, SimpleIntervalJob} from 'toad-scheduler';
-import type AuthService from './service';
+import type SessionsService from './sessions-service';
 
-export const registerAuthJobs = (fastify: FastifyInstance, authService: AuthService): void => {
+export const registerAuthJobs = (fastify: FastifyInstance, sessionsService: SessionsService): void => {
     const task = new AsyncTask(
         'purge expired sessions',
-        () => authService.deleteExpiredSessions(),
+        () => sessionsService.deleteExpiredSessions(),
         err => fastify.log.error(err, 'sessions purge failed')
     );
 

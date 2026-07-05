@@ -14,19 +14,21 @@ import {
     refreshTokenSchema,
     registerUserSchema
 } from './schemas';
-import AuthService from './service';
+import SessionsService from './sessions-service';
+import UsersService from './users-service';
 
 const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
-    const authService = new AuthService(fastify.prisma);
+    const sessionsService = new SessionsService(fastify.prisma);
+    const usersService = new UsersService(fastify.prisma);
     const oAuthService = new OAuthService(fastify.prisma);
 
-    registerAuthJobs(fastify, authService);
+    registerAuthJobs(fastify, sessionsService);
 
     fastify.post(
         '/register',
         {schema: registerUserSchema, config: {rateLimit: {max: 5}}},
         async (req, res): Promise<void> => {
-            res.code(201).send({user: await authService.createUser(req.body)});
+            res.code(201).send({user: await usersService.createUser(req.body)});
         }
     );
 
@@ -34,21 +36,21 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         '/login',
         {schema: loginUserSchema, config: {rateLimit: {max: 5}}},
         async (req, res): Promise<void> => {
-            const user = await authService.verifyUser(req.body);
-            res.send({token: await startSession(res, authService, user)});
+            const user = await usersService.verifyUser(req.body);
+            res.send({token: await startSession(res, sessionsService, user)});
         }
     );
 
     fastify.get('/github/callback', async (req, res): Promise<void> => {
         const {token} = await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
         const user = await oAuthService.login(AccountProvider.github, token);
-        res.send({token: await startSession(res, authService, user)});
+        res.send({token: await startSession(res, sessionsService, user)});
     });
 
     fastify.get('/google/callback', async (req, res): Promise<void> => {
         const {token} = await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
         const user = await oAuthService.login(AccountProvider.google, token);
-        res.send({token: await startSession(res, authService, user)});
+        res.send({token: await startSession(res, sessionsService, user)});
     });
 
     fastify.post(
@@ -60,14 +62,14 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
             if (tokenType !== TokenTypes.refresh || !sessionId) throw httpErrors.unauthorized();
 
-            const session = await authService.getSessionById(sessionId);
+            const session = await sessionsService.getSessionById(sessionId);
 
             if (!session || session.expiresAt < new Date()) {
-                !!session && (await authService.deleteSession(sessionId));
+                !!session && (await sessionsService.deleteSession(sessionId));
                 throw httpErrors.unauthorized();
             }
 
-            const user = await authService.getUserById(id);
+            const user = await usersService.getUserById(id);
             const accessToken = await res.jwtSign({sub: user.id, rank: user.rank, tokenType: TokenTypes.access});
 
             res.send({token: accessToken});
@@ -78,7 +80,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         try {
             await req.jwtVerify({onlyCookie: true});
             const sessionId = req.user.sessionId;
-            !!sessionId && (await authService.deleteSession(sessionId));
+            !!sessionId && (await sessionsService.deleteSession(sessionId));
         } catch {
             fastify.log.info('Force logout');
         }
@@ -91,7 +93,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         try {
             await req.jwtVerify({onlyCookie: true});
             const id = req.user.id;
-            !!id && (await authService.deleteAllSessions(id));
+            !!id && (await sessionsService.deleteAllSessions(id));
         } catch {
             fastify.log.info('Force logout');
         }
@@ -104,7 +106,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         '/me',
         {schema: getCurrentUserSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
-            res.send({user: await authService.getCurrentUser(req.user.id)});
+            res.send({user: await usersService.getCurrentUser(req.user.id)});
         }
     );
 
@@ -113,7 +115,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         {schema: changeUserRankSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
             const targetId = req.params.id;
-            const targetUser = await authService.getUserById(targetId);
+            const targetUser = await usersService.getUserById(targetId);
 
             const targetRank = UserRankValue[targetUser.rank];
             const newRank = UserRankValue[req.body.rank];
@@ -121,7 +123,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
             if (targetRank >= callerRank || callerRank < newRank) throw httpErrors.forbidden();
 
-            res.send({user: await authService.updateUser(targetId, req.body)});
+            res.send({user: await usersService.updateUser(targetId, req.body)});
         }
     );
 
@@ -134,19 +136,19 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         },
         async (req, res): Promise<void> => {
             const id = req.user.id;
-            const user = await authService.getUserById(id);
+            const user = await usersService.getUserById(id);
             const {password, newPassword} = req.body;
 
             if (!user.password) {
-                await authService.updateUser(id, {password: await hashPassword(newPassword)});
+                await usersService.updateUser(id, {password: await hashPassword(newPassword)});
             } else {
                 if (!password) throw httpErrors.badRequest('Current password is required');
                 if (password === newPassword) throw httpErrors.badRequest('New password must be different');
 
                 if (!(await verifyPassword(password, user.password))) throw httpErrors.badRequest('Wrong password');
 
-                await authService.updateUser(id, {password: await hashPassword(newPassword)});
-                await authService.deleteAllSessions(id);
+                await usersService.updateUser(id, {password: await hashPassword(newPassword)});
+                await sessionsService.deleteAllSessions(id);
 
                 res.clearCookie(RefreshCookieName, {path: refreshCookieOptions.path});
             }

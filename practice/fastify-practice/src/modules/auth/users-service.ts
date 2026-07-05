@@ -1,11 +1,9 @@
 import {httpErrors} from '@fastify/sensible';
-import type {PrismaClient, Session, User} from '@/database/prisma/client';
-import type {BatchPayload} from '@/database/prisma/internal/prismaNamespace';
-import {RefreshTokenAgeSec} from './const';
+import type {PrismaClient, User} from '@/database/prisma/client';
 import {hashPassword, verifyPassword} from './helper';
 import type {ILoginUserData, IRegisterUserData, IUpdateUserData, IUserWithStormtrooper} from './types';
 
-class AuthService {
+class UsersService {
     private readonly db: PrismaClient;
 
     public constructor(db: PrismaClient) {
@@ -40,26 +38,6 @@ class AuthService {
     public updateUser(id: number, data: IUpdateUserData): Promise<User> {
         return this.db.user.update({where: {id}, data});
     }
-
-    public createSession(userId: number): Promise<Session> {
-        return this.db.session.create({data: {userId, expiresAt: new Date(Date.now() + RefreshTokenAgeSec * 1000)}});
-    }
-
-    public getSessionById(id: string): Promise<Session | null> {
-        return this.db.session.findUnique({where: {id}});
-    }
-
-    public deleteSession(id: string): Promise<BatchPayload> {
-        return this.db.session.deleteMany({where: {id}});
-    }
-
-    public deleteAllSessions(userId: number): Promise<BatchPayload> {
-        return this.db.session.deleteMany({where: {userId}});
-    }
-
-    public deleteExpiredSessions(): Promise<BatchPayload> {
-        return this.db.session.deleteMany({where: {expiresAt: {lt: new Date()}}});
-    }
 }
 
-export default AuthService;
+export default UsersService;
