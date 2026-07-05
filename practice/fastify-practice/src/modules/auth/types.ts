@@ -1,5 +1,6 @@
 import type {Static} from '@fastify/type-provider-typebox';
 import type {IValuesOf} from '@/common/types';
+import type {Session} from '@/database/prisma/client';
 import type {UserRank} from '@/database/prisma/enums';
 import type {UserGetPayload} from '@/database/prisma/models/User';
 import {loginUserSchema, registerUserSchema, updateUserSchema} from '@/modules/auth/schemas';
@@ -20,3 +21,8 @@ export interface IJWTPayload {
 }
 
 export type IUserWithStormtrooper = UserGetPayload<{include: {stormtrooper: true}}>;
+
+export type IRedisSession = Omit<Session, 'expiresAt' | 'createdAt'> & {
+    expiresAt: string;
+    createdAt: string;
+};

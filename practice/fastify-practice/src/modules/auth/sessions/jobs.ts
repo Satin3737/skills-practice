@@ -1,6 +1,6 @@
 import type {FastifyInstance} from 'fastify';
 import {AsyncTask, SimpleIntervalJob} from 'toad-scheduler';
-import type SessionsService from './sessions-service';
+import type SessionsService from './service';
 
 export const registerAuthJobs = (fastify: FastifyInstance, sessionsService: SessionsService): void => {
     const task = new AsyncTask(

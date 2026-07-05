@@ -5,7 +5,7 @@ import {promisify} from 'util';
 import {Environment} from '@/common/const';
 import type {User} from '@/database/prisma/client';
 import {RefreshTokenAgeSec, TokenTypes, refreshCookieOptions} from './const';
-import type SessionsService from './sessions-service';
+import type SessionsService from './sessions/service';
 
 const scryptAsync = promisify(scrypt);
 const keyLen = 64;

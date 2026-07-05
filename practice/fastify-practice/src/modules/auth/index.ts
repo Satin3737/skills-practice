@@ -3,7 +3,6 @@ import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
 import {AccountProvider, UserRank} from '@/database/prisma/enums';
 import {RefreshCookieName, TokenTypes, UserRankValue, refreshCookieOptions} from './const';
 import {hashPassword, startSession, verifyPassword} from './helper';
-import {registerAuthJobs} from './jobs';
 import OAuthService from './oauth/service';
 import {
     changeUserPasswordSchema,
@@ -14,13 +13,16 @@ import {
     refreshTokenSchema,
     registerUserSchema
 } from './schemas';
-import SessionsService from './sessions-service';
-import UsersService from './users-service';
+import UsersService from './service';
+import {registerAuthJobs} from './sessions/jobs';
+import SessionsRedisService from './sessions/redis';
+import SessionsService from './sessions/service';
 
 const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
-    const sessionsService = new SessionsService(fastify.prisma);
-    const usersService = new UsersService(fastify.prisma);
-    const oAuthService = new OAuthService(fastify.prisma);
+    const prisma = fastify.prisma;
+    const sessionsService = new SessionsService(prisma, new SessionsRedisService(fastify.redisFailFast, fastify.log));
+    const usersService = new UsersService(prisma);
+    const oAuthService = new OAuthService(prisma);
 
     registerAuthJobs(fastify, sessionsService);
 
@@ -63,9 +65,10 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             if (tokenType !== TokenTypes.refresh || !sessionId) throw httpErrors.unauthorized();
 
             const session = await sessionsService.getSessionById(sessionId);
+            if (!session || session.userId !== id) throw httpErrors.unauthorized();
 
-            if (!session || session.expiresAt < new Date()) {
-                !!session && (await sessionsService.deleteSession(sessionId));
+            if (session.expiresAt < new Date()) {
+                await sessionsService.deleteSession(sessionId);
                 throw httpErrors.unauthorized();
             }
 
