@@ -1,5 +1,5 @@
-import {Worker} from 'worker_threads';
 import {fileURLToPath} from 'url';
+import {Worker} from 'worker_threads';
 
 // worker_threads: real threads INSIDE one process
 // each worker has its own event loop + V8 isolate, but they share the process
