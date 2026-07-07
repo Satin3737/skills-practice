@@ -1,5 +1,7 @@
 import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
+import {RedisSubChannel} from '@/common/const';
 import {UserRank} from '@/database/prisma/enums';
+import {MissionsFeedEvents} from '@/modules/missions/const';
 import {createMissionsForPlanetSchema, getMissionsByPlanetSchema} from '@/modules/missions/schemas';
 import PlanetsService from '@/modules/planets/service';
 import {createPlanetSchema, deletePlanetSchema, getPlanetSchema, getPlanetsSchema, updatePlanetSchema} from './schemas';
@@ -52,7 +54,14 @@ const planets: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         '/:id/missions',
         {schema: createMissionsForPlanetSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
-            res.code(201).send({missions: await missionsService.createMissionsForPlanet(req.params.id, req.body)});
+            const missions = await missionsService.createMissionsForPlanet(req.params.id, req.body);
+
+            fastify.pushRedisEvent(RedisSubChannel.missionsFeed, {
+                event: MissionsFeedEvents.missionsCreated,
+                data: {missions}
+            });
+
+            res.code(201).send({missions});
         }
     );
 };

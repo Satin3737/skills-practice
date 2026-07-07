@@ -1,4 +1,5 @@
 import fp from 'fastify-plugin';
+import MissionFeed from '@/modules/missions/feed';
 import MissionsService from '@/modules/missions/service';
 import StormtrooperService from '@/modules/stormtroopers/service';
 import WeaponService from '@/modules/weapons/service';
@@ -8,6 +9,7 @@ const servicesPlugin = fp(
         fastify.decorate('stormtrooperService', new StormtrooperService(fastify.prisma));
         fastify.decorate('missionsService', new MissionsService(fastify.prisma));
         fastify.decorate('weaponsService', new WeaponService(fastify.prisma));
+        fastify.decorate('missionFeed', new MissionFeed());
     },
     {name: 'services', dependencies: ['prisma']}
 );

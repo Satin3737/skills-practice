@@ -3,3 +3,7 @@ export const Environment = {
     production: 'production',
     test: 'test'
 } as const;
+
+export const RedisSubChannel = {
+    missionsFeed: 'missions:feed'
+} as const;

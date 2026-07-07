@@ -1,5 +1,6 @@
 import {type FastifyRedisPluginOptions, fastifyRedis} from '@fastify/redis';
 import fp from 'fastify-plugin';
+import type {IRedisChannelPayloads} from '@/types/redis';
 
 const redisPlugin = fp<FastifyRedisPluginOptions>(
     async fastify => {
@@ -18,6 +19,15 @@ const redisPlugin = fp<FastifyRedisPluginOptions>(
 
         fastify.decorate('redisSub', fastify.redis.sub);
         fastify.decorate('redisFailFast', fastify.redis.failFast);
+
+        fastify.decorate(
+            'pushRedisEvent',
+            <C extends keyof IRedisChannelPayloads>(channel: C, message: IRedisChannelPayloads[C]): void => {
+                fastify.redis
+                    .publish(channel, JSON.stringify(message))
+                    .catch(err => fastify.log.error({err}, 'Failed to publish event'));
+            }
+        );
     },
     {name: 'redis', dependencies: ['env']}
 );
