@@ -35,7 +35,7 @@ export const createWeaponSchema = {
 
 export const updateWeaponSchema = {
     params: byIdPSchema,
-    body: Type.Partial(createWeaponSchema.body, {minProperties: 1}),
+    body: Type.Partial(createWeaponSchema.body, {minProperties: 1, additionalProperties: false}),
     response: {
         200: Type.Object({weapon: WeaponPlain})
     }

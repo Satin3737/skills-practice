@@ -39,7 +39,7 @@ export const createMissionSchema = {
 
 export const updateMissionSchema = {
     params: byIdPSchema,
-    body: Type.Partial(createMissionSchema.body, {minProperties: 1}),
+    body: Type.Partial(createMissionSchema.body, {minProperties: 1, additionalProperties: false}),
     response: {
         200: Type.Object({mission: MissionPlain})
     }
@@ -62,7 +62,7 @@ export const getMissionsByPlanetSchema = {
 
 export const createMissionsForPlanetSchema = {
     params: byIdPSchema,
-    body: Type.Array(Type.Omit(createMissionSchema.body, ['planetId'])),
+    body: Type.Array(Type.Omit(createMissionSchema.body, ['planetId'], {additionalProperties: false})),
     response: {
         201: Type.Object({missions: Type.Array(MissionPlain)})
     }

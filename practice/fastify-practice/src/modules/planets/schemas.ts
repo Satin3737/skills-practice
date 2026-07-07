@@ -37,7 +37,7 @@ export const createPlanetSchema = {
 
 export const updatePlanetSchema = {
     params: byIdPSchema,
-    body: Type.Partial(createPlanetSchema.body, {minProperties: 1}),
+    body: Type.Partial(createPlanetSchema.body, {minProperties: 1, additionalProperties: false}),
     response: {
         200: Type.Object({planet: PlanetPlain})
     }

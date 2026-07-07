@@ -27,7 +27,7 @@ export const registerUserSchema = {
 };
 
 export const loginUserSchema = {
-    body: Type.Pick(registerUserSchema.body, ['email', 'password']),
+    body: Type.Pick(registerUserSchema.body, ['email', 'password'], {additionalProperties: false}),
     response: {
         200: Type.Object({
             token: Type.String()
@@ -64,7 +64,7 @@ export const getCurrentUserSchema = {
 
 export const updateUserSchema = {
     params: byIdPSchema,
-    body: Type.Partial(registerUserSchema.body, {minProperties: 1}),
+    body: Type.Partial(registerUserSchema.body, {minProperties: 1, additionalProperties: false}),
     response: {
         200: Type.Object({user: UserPlainPublic})
     }

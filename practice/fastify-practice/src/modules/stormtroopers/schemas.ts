@@ -33,7 +33,7 @@ export const createStormtrooperSchema = {
 
 export const updateStormtrooperSchema = {
     params: byIdPSchema,
-    body: Type.Partial(createStormtrooperSchema.body, {minProperties: 1}),
+    body: Type.Partial(createStormtrooperSchema.body, {minProperties: 1, additionalProperties: false}),
     response: {
         200: Type.Object({stormtrooper: StormtrooperPlain})
     }
