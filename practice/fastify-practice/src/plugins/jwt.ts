@@ -1,8 +1,8 @@
-import jwt, {type FastifyJWTOptions} from '@fastify/jwt';
+import jwt from '@fastify/jwt';
 import fp from 'fastify-plugin';
 import {AccessTokenAgeSec} from '@/modules/auth/const';
 
-const jwtPlugin = fp<FastifyJWTOptions>(
+const jwtPlugin = fp(
     async fastify => {
         await fastify.register(jwt, {
             secret: fastify.config.JWT_SECRET,

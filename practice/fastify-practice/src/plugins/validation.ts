@@ -1,4 +1,4 @@
-import type {FastifyError, FastifyPluginOptions} from 'fastify';
+import type {FastifyError} from 'fastify';
 import fp from 'fastify-plugin';
 import {PrismaClientKnownRequestError} from '@/database/prisma/internal/prismaNamespace';
 
@@ -7,7 +7,7 @@ const fieldName = (err: NonNullable<FastifyError['validation']>[number]): string
     return err.instancePath.replace(/^\//, '').replace(/\//g, '.') || '_';
 };
 
-const validationPlugin = fp<FastifyPluginOptions>(
+const validationPlugin = fp(
     async fastify => {
         fastify.setErrorHandler((error: FastifyError, _, res) => {
             if (error instanceof PrismaClientKnownRequestError) {

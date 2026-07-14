@@ -1,7 +1,7 @@
-import helmet, {type FastifyHelmetOptions} from '@fastify/helmet';
+import helmet from '@fastify/helmet';
 import fp from 'fastify-plugin';
 
-const helmetPlugin = fp<FastifyHelmetOptions>(
+const helmetPlugin = fp(
     async fastify => {
         await fastify.register(helmet, {global: true});
     },

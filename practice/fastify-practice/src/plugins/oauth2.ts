@@ -1,7 +1,7 @@
-import oauth2, {type FastifyOAuth2Options} from '@fastify/oauth2';
+import oauth2 from '@fastify/oauth2';
 import fp from 'fastify-plugin';
 
-const oauth2Plugin = fp<FastifyOAuth2Options>(
+const oauth2Plugin = fp(
     async fastify => {
         await fastify.register(oauth2, {
             name: 'githubOAuth2',

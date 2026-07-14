@@ -1,8 +1,8 @@
-import {type FastifyRedisPluginOptions, fastifyRedis} from '@fastify/redis';
+import {fastifyRedis} from '@fastify/redis';
 import fp from 'fastify-plugin';
 import type {IRedisChannelPayloads} from '@/types/redis';
 
-const redisPlugin = fp<FastifyRedisPluginOptions>(
+const redisPlugin = fp(
     async fastify => {
         const url = fastify.config.REDIS_URL;
 

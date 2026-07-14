@@ -1,7 +1,7 @@
-import sensible, {type FastifySensibleOptions} from '@fastify/sensible';
+import sensible from '@fastify/sensible';
 import fp from 'fastify-plugin';
 
-const sensiblePlugin = fp<FastifySensibleOptions>(
+const sensiblePlugin = fp(
     async fastify => {
         await fastify.register(sensible);
     },

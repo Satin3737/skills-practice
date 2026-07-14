@@ -1,8 +1,8 @@
-import swagger, {type FastifySwaggerOptions} from '@fastify/swagger';
+import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import fp from 'fastify-plugin';
 
-const swaggerPlugin = fp<FastifySwaggerOptions>(
+const swaggerPlugin = fp(
     async fastify => {
         await fastify.register(swagger, {
             openapi: {

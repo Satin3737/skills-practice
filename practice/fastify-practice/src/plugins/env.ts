@@ -1,4 +1,4 @@
-import env, {type FastifyEnvOptions} from '@fastify/env';
+import env from '@fastify/env';
 import {type Static, Type} from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 import {Environment} from '@/common/const';
@@ -19,7 +19,7 @@ const schema = Type.Object({
 
 export type IEnvConfig = Static<typeof schema>;
 
-const envPlugin = fp<FastifyEnvOptions>(
+const envPlugin = fp(
     async fastify => {
         await fastify.register(env, {dotenv: true, schema});
     },

@@ -1,7 +1,7 @@
-import cookie, {type FastifyCookieOptions} from '@fastify/cookie';
+import cookie from '@fastify/cookie';
 import fp from 'fastify-plugin';
 
-const cookiePlugin = fp<FastifyCookieOptions>(
+const cookiePlugin = fp(
     async fastify => {
         await fastify.register(cookie);
     },
