@@ -8,7 +8,7 @@
     "license": "ISC",
     "description": "in-memory-cache",
     "dependencies": {
-        "lru-cache": "^11.5.1",
+        "lru-cache": "^11.5.2",
         "node-cache": "^5.1.2"
     }
 }

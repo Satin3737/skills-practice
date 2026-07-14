@@ -21,4 +21,5 @@ const tsCode = `
 const jsCode = stripTypeScriptTypes(tsCode);
 
 console.log(jsCode, '\ntypes striped');
+// oxlint-disable-next-line no-eval -- demonstrating stripped output actually executes as valid JS
 console.log(eval(jsCode), '\njs code is valid');
