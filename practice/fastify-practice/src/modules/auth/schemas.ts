@@ -12,6 +12,7 @@ const UserPlainPublic = Type.Object(
 const passwordSchema = Type.String({minLength: 6, maxLength: 255});
 
 export const registerUserSchema = {
+    security: [],
     body: Type.Object(
         {
             email: Type.String({pattern: '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'}),
@@ -27,6 +28,7 @@ export const registerUserSchema = {
 };
 
 export const loginUserSchema = {
+    security: [],
     body: Type.Pick(registerUserSchema.body, ['email', 'password'], {additionalProperties: false}),
     response: {
         200: Type.Object({
@@ -38,7 +40,17 @@ export const loginUserSchema = {
     }
 };
 
+export const oauthCallbackSchema = {
+    security: [],
+    response: {
+        200: Type.Object({
+            token: Type.String()
+        })
+    }
+};
+
 export const refreshTokenSchema = {
+    security: [],
     response: {
         200: Type.Object({
             token: Type.String()
@@ -47,6 +59,7 @@ export const refreshTokenSchema = {
 };
 
 export const logoutUserSchema = {
+    security: [],
     response: {
         200: Type.Object({
             message: Type.String()

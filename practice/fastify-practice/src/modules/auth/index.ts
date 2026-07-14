@@ -10,6 +10,7 @@ import {
     getCurrentUserSchema,
     loginUserSchema,
     logoutUserSchema,
+    oauthCallbackSchema,
     refreshTokenSchema,
     registerUserSchema
 } from './schemas';
@@ -43,13 +44,13 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         }
     );
 
-    fastify.get('/github/callback', async (req, res): Promise<void> => {
+    fastify.get('/github/callback', {schema: oauthCallbackSchema}, async (req, res): Promise<void> => {
         const {token} = await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
         const user = await oAuthService.login(AccountProvider.github, token);
         res.send({token: await startSession(res, sessionsService, user)});
     });
 
-    fastify.get('/google/callback', async (req, res): Promise<void> => {
+    fastify.get('/google/callback', {schema: oauthCallbackSchema}, async (req, res): Promise<void> => {
         const {token} = await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
         const user = await oAuthService.login(AccountProvider.google, token);
         res.send({token: await startSession(res, sessionsService, user)});
