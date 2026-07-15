@@ -6,7 +6,7 @@
     "type": "module",
     "scripts": {
         "dev": "tsx watch src/app.ts",
-        "build": "pnpm oxlint . && tsc && tsx esbuild.config.ts",
+        "build": "pnpm oxlint . && tsc && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
         "start": "node dist/app.js",
         "db:generate": "pnpm dlx prisma generate",
         "db:migrate": "pnpm dlx prisma migrate dev",
@@ -47,8 +47,8 @@
     },
     "devDependencies": {
         "@types/pg": "^8.20.0",
-        "esbuild": "^0.28.1",
         "pino-pretty": "^13.1.3",
-        "prisma": "^7.8.0"
+        "prisma": "^7.8.0",
+        "tsc-alias": "^1.9.1"
     }
 }
