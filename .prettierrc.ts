@@ -9,7 +9,7 @@ const config: Config = {
     trailingComma: 'none',
     bracketSpacing: false,
     arrowParens: 'avoid',
-    importOrder: ['<THIRD_PARTY_MODULES>', '^@/(.*)$', '^[./(.*)$]'],
+    importOrder: ['^dotenv/config', '<THIRD_PARTY_MODULES>', '^@/(.*)$', '^[./(.*)$]'],
     importOrderSortSpecifiers: true,
     importOrderParserPlugins: ['typescript', 'jsx', 'decorators-legacy'],
     plugins: ['@trivago/prettier-plugin-sort-imports']

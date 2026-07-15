@@ -1,12 +1,25 @@
+import 'dotenv/config';
 import autoload from '@fastify/autoload';
 import Fastify from 'fastify';
 import path from 'path';
 import {fileURLToPath} from 'url';
+import {Environment} from '@/common/const';
 
 const srcDir = path.dirname(fileURLToPath(import.meta.url));
 
 const fastify = Fastify({
-    logger: true,
+    logger: {
+        ...(process.env.NODE_ENV === Environment.development && {
+            level: 'debug',
+            transport: {
+                target: 'pino-pretty',
+                options: {
+                    colorize: true,
+                    translateTime: 'SYS:standard'
+                }
+            }
+        })
+    },
     ajv: {customOptions: {allErrors: true}}
 });
 
