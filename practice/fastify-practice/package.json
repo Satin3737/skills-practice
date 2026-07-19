@@ -8,6 +8,8 @@
         "dev": "tsx watch src/app.ts",
         "build": "pnpm oxlint . && tsc && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
         "start": "node dist/app.js",
+        "test": "tsx scripts/setup-test-db.ts && NODE_OPTIONS=--import=tsx vitest run",
+        "test:watch": "tsx scripts/setup-test-db.ts && NODE_OPTIONS=--import=tsx vitest",
         "db:generate": "pnpm dlx prisma generate",
         "db:migrate": "pnpm dlx prisma migrate dev",
         "db:create-migration": "pnpm dlx prisma migrate dev --create-only",
@@ -19,7 +21,7 @@
     "description": "fastify practice",
     "dependencies": {
         "@fastify/autoload": "^6.4.0",
-        "@fastify/cookie": "^11.1.1",
+        "@fastify/cookie": "^11.1.2",
         "@fastify/cors": "^11.3.0",
         "@fastify/env": "^7.0.0",
         "@fastify/helmet": "^13.1.0",
@@ -49,6 +51,7 @@
         "@types/pg": "^8.20.0",
         "pino-pretty": "^13.1.3",
         "prisma": "^7.8.0",
-        "tsc-alias": "^1.9.1"
+        "tsc-alias": "^1.9.1",
+        "vitest": "^4.1.10"
     }
 }

@@ -10,7 +10,7 @@
     "author": "satin",
     "license": "ISC",
     "description": "skills practice",
-    "packageManager": "pnpm@11.13.0",
+    "packageManager": "pnpm@11.15.0",
     "devDependencies": {
         "@trivago/prettier-plugin-sort-imports": "^6.0.2",
         "@types/node": "^26.1.1",
