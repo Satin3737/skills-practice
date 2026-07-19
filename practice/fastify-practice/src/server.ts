@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import autoload from '@fastify/autoload';
-import Fastify, {type FastifyInstance} from 'fastify';
+import Fastify, {type FastifyInstance, type FastifyServerOptions} from 'fastify';
 import path from 'path';
 import {fileURLToPath} from 'url';
 import {Environment} from '@/common/const';
@@ -13,18 +13,7 @@ class Server {
         this.srcDir = path.dirname(fileURLToPath(import.meta.url));
 
         this.app = Fastify({
-            logger: {
-                ...(process.env.NODE_ENV === Environment.development && {
-                    level: 'debug',
-                    transport: {
-                        target: 'pino-pretty',
-                        options: {
-                            colorize: true,
-                            translateTime: 'SYS:standard'
-                        }
-                    }
-                })
-            },
+            logger: this.getLoggerConfig(),
             ajv: {customOptions: {allErrors: true}}
         });
     }
@@ -41,6 +30,26 @@ class Server {
         } catch (err) {
             this.app.log.error(err);
             process.exit(1);
+        }
+    }
+
+    private getLoggerConfig(): FastifyServerOptions['logger'] {
+        switch (process.env.NODE_ENV) {
+            case Environment.development:
+                return {
+                    level: 'debug',
+                    transport: {
+                        target: 'pino-pretty',
+                        options: {
+                            colorize: true,
+                            translateTime: 'SYS:standard'
+                        }
+                    }
+                };
+            case Environment.test:
+                return {level: 'silent'};
+            default:
+                return true;
         }
     }
 }
