@@ -1,6 +1,12 @@
 import type {IEntityListParams} from '@/common/types';
 import type {Mission, PrismaClient} from '@/database/prisma/client';
-import type {ICreatePlanetMissionsData, IMissionListResponse, IMissionWithPlanet, IUpdateMissionData} from './types';
+import type {
+    ICreatePlanetMissionsData,
+    IMissionListResponse,
+    IMissionWithPlanet,
+    IMissionWithStormtroopers,
+    IUpdateMissionData
+} from './types';
 
 class MissionsService {
     private readonly db: PrismaClient;
@@ -57,6 +63,17 @@ class MissionsService {
     public createMissionsForPlanet(planetId: number, missions: ICreatePlanetMissionsData[]): Promise<Mission[]> {
         const data = missions.map(mission => ({...mission, planetId}));
         return this.db.mission.createManyAndReturn({data});
+    }
+
+    public assignStormtroopersToMission(
+        missionId: number,
+        stormtrooperIds: number[]
+    ): Promise<IMissionWithStormtroopers> {
+        return this.db.mission.update({
+            where: {id: missionId},
+            data: {stormtroopers: {set: stormtrooperIds.map(id => ({id}))}},
+            include: {stormtroopers: true}
+        });
     }
 }
 

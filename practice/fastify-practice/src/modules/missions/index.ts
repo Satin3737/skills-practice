@@ -2,7 +2,13 @@ import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
 import {RedisSubChannel} from '@/common/const';
 import {UserRank} from '@/database/prisma/enums';
 import {MissionsFeedEvents} from './const';
-import {deleteMissionSchema, getMissionSchema, getMissionsSchema, updateMissionSchema} from './schemas';
+import {
+    assignStormtroopersSchema,
+    deleteMissionSchema,
+    getMissionSchema,
+    getMissionsSchema,
+    updateMissionSchema
+} from './schemas';
 import {subscribeToMissionsFeed} from './subscriber';
 import type {IMissionsFeedClient} from './types';
 
@@ -48,6 +54,16 @@ const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         {schema: deleteMissionSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
             res.send({mission: await missionsService.deleteMission(req.params.id)});
+        }
+    );
+
+    fastify.put(
+        '/:id/stormtroopers',
+        {schema: assignStormtroopersSchema, onRequest: fastify.authGuard(UserRank.captain)},
+        async (req, res): Promise<void> => {
+            void res.send({
+                mission: await missionsService.assignStormtroopersToMission(req.params.id, req.body.stormtroopers)
+            });
         }
     );
 

@@ -2,6 +2,7 @@ import {Type} from '@fastify/type-provider-typebox';
 import {byIdPSchema, paginatedListSchema} from '@/common/schemas';
 import {MissionPlain} from '@/database/prismabox/Mission';
 import {PlanetPlain} from '@/database/prismabox/Planet';
+import {StormtrooperPlain} from '@/database/prismabox/Stormtrooper';
 
 export const getMissionsSchema = {
     querystring: paginatedListSchema,
@@ -65,5 +66,18 @@ export const createMissionsForPlanetSchema = {
     body: Type.Array(Type.Omit(createMissionSchema.body, ['planetId'], {additionalProperties: false})),
     response: {
         201: Type.Object({missions: Type.Array(MissionPlain)})
+    }
+};
+
+export const assignStormtroopersSchema = {
+    params: byIdPSchema,
+    body: Type.Object(
+        {stormtroopers: Type.Array(Type.Integer({minimum: 1}), {minItems: 1})},
+        {additionalProperties: false}
+    ),
+    response: {
+        200: Type.Object({
+            mission: Type.Object({...MissionPlain.properties, stormtroopers: Type.Array(StormtrooperPlain)})
+        })
     }
 };

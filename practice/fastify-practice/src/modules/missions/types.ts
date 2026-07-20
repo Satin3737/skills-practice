@@ -13,6 +13,8 @@ export type IUpdateMissionData = Static<typeof updateMissionSchema.body>;
 
 export type IMissionWithPlanet = MissionGetPayload<{include: {planet: true}}>;
 
+export type IMissionWithStormtroopers = MissionGetPayload<{include: {stormtroopers: true}}>;
+
 export interface IMissionListResponse {
     missions: Mission[];
     total: number;
