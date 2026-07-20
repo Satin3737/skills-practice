@@ -46,7 +46,7 @@ class WeaponService {
     ): Promise<IWeaponListResponse> {
         const where = {
             mark: {contains: search, mode: 'insensitive'},
-            stormtrooper: {some: {id: stormtrooperId}}
+            stormtroopers: {some: {id: stormtrooperId}}
         } as const;
 
         const [weapons, total] = await this.db.$transaction([
@@ -64,14 +64,14 @@ class WeaponService {
     public assignWeaponToStormtrooper(stormtrooperId: number, weaponId: number): Promise<Weapon> {
         return this.db.weapon.update({
             where: {id: weaponId},
-            data: {stormtrooper: {connect: {id: stormtrooperId}}}
+            data: {stormtroopers: {connect: {id: stormtrooperId}}}
         });
     }
 
     public unassignWeaponFromStormtrooper(stormtrooperId: number, weaponId: number): Promise<Weapon> {
         return this.db.weapon.update({
             where: {id: weaponId},
-            data: {stormtrooper: {disconnect: {id: stormtrooperId}}}
+            data: {stormtroopers: {disconnect: {id: stormtrooperId}}}
         });
     }
 }

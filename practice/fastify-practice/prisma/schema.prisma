@@ -73,21 +73,21 @@ model Stormtrooper {
 }
 
 model Weapon {
-  id           Int            @id @default(autoincrement())
-  mark         String
-  damage       Int
-  isDeadly     Boolean        @default(false)
-  stormtrooper Stormtrooper[]
+  id            Int            @id @default(autoincrement())
+  mark          String
+  damage        Int
+  isDeadly      Boolean        @default(false)
+  stormtroopers Stormtrooper[]
 }
 
 model Mission {
-  id           Int            @id @default(autoincrement())
-  title        String
-  briefing     String?
-  isCompleted  Boolean        @default(false)
-  stormtrooper Stormtrooper[]
-  planet       Planet         @relation(fields: [planetId], references: [id], onDelete: Cascade)
-  planetId     Int
+  id            Int            @id @default(autoincrement())
+  title         String
+  briefing      String?
+  isCompleted   Boolean        @default(false)
+  stormtroopers Stormtrooper[]
+  planet        Planet         @relation(fields: [planetId], references: [id], onDelete: Cascade)
+  planetId      Int
 }
 
 model Planet {
