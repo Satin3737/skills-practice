@@ -14,7 +14,9 @@ const schema = Type.Object({
     GITHUB_CLIENT_SECRET: Type.String(),
     GOOGLE_CLIENT_ID: Type.String(),
     GOOGLE_CLIENT_SECRET: Type.String(),
-    REDIS_URL: Type.String()
+    REDIS_URL: Type.String(),
+    SMTP_HOST: Type.String({default: 'localhost'}),
+    SMTP_PORT: Type.Number({default: 1025})
 });
 
 export type IEnvConfig = Static<typeof schema>;
