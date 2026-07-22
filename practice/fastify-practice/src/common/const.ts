@@ -7,3 +7,7 @@ export const Environment = {
 export const RedisSubChannel = {
     missionsFeed: 'missions:feed'
 } as const;
+
+export const QueueType = {
+    email: 'email'
+} as const;
