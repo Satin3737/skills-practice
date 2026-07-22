@@ -30,6 +30,13 @@ services:
             timeout: 5s
             retries: 5
 
+    fastify-practice-mailhog:
+        image: mailhog/mailhog
+        restart: unless-stopped
+        ports:
+            - "1025:1025"
+            - "8025:8025"
+
 volumes:
     postgres-data:
     redis-data:
