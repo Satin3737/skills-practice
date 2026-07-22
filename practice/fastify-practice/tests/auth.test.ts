@@ -1,5 +1,5 @@
 import type {FastifyInstance} from 'fastify';
-import {afterAll, afterEach, beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
 import {UserRank} from '@/database/prisma/enums';
 import {getRefreshCookie, loginUser, registerUser} from './helpers/auth';
 import {buildTestApp} from './helpers/build-app';
@@ -12,10 +12,15 @@ describe('auth', () => {
         app = await buildTestApp();
     });
 
+    beforeEach(() => {
+        vi.spyOn(app.emailQueue, 'add').mockImplementation(vi.fn());
+    });
+
     afterEach(async () => {
         await app.prisma.user.deleteMany();
         await app.prisma.stormtrooper.deleteMany();
         await app.redisFailFast.flushdb();
+        vi.restoreAllMocks();
     });
 
     afterAll(async () => {
@@ -30,6 +35,10 @@ describe('auth', () => {
             const {user} = res.json();
             expect(user).toMatchObject({email: 'luke@rebels.com', rank: UserRank.trooper});
             expect(user.password).toBeUndefined();
+            expect(app.emailQueue.add).toHaveBeenCalledWith(
+                'welcome',
+                expect.objectContaining({to: 'luke@rebels.com'})
+            );
         });
 
         it('rejects duplicate email', async () => {

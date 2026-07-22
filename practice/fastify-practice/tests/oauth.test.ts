@@ -1,5 +1,5 @@
 import type {FastifyInstance} from 'fastify';
-import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
+import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
 import {AccountProvider} from '@/database/prisma/enums';
 import {registerUser} from './helpers/auth';
 import {buildTestApp} from './helpers/build-app';
@@ -10,6 +10,10 @@ describe('oauth', () => {
 
     beforeAll(async () => {
         app = await buildTestApp();
+    });
+
+    beforeEach(() => {
+        vi.spyOn(app.emailQueue, 'add').mockImplementation(vi.fn());
     });
 
     afterEach(async () => {

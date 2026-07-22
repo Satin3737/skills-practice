@@ -1,5 +1,5 @@
 import type {FastifyInstance} from 'fastify';
-import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it} from 'vitest';
+import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
 import {UserRank} from '@/database/prisma/enums';
 import {buildTestApp} from './helpers/build-app';
 import {signAccessToken} from './helpers/jwt';
@@ -14,6 +14,8 @@ describe('missions', () => {
     });
 
     beforeEach(async () => {
+        vi.spyOn(app.emailQueue, 'add').mockImplementation(vi.fn());
+
         const planet = await app.prisma.planet.create({data: {name: 'Hoth', size: 7200, type: 'exoplanet'}});
         planetId = planet.id;
 
@@ -26,6 +28,7 @@ describe('missions', () => {
     afterEach(async () => {
         await app.prisma.planet.deleteMany();
         await app.prisma.stormtrooper.deleteMany();
+        vi.restoreAllMocks();
     });
 
     afterAll(async () => {
@@ -110,6 +113,40 @@ describe('missions', () => {
 
             expect(res.statusCode).toBe(200);
             expect(res.json().mission).toMatchObject({isCompleted: true});
+        });
+
+        it('does not queue an email when there are no emperors', async () => {
+            const token = signAccessToken(app, UserRank.captain);
+
+            await app.inject({
+                method: 'PATCH',
+                url: `/missions/${missionId}`,
+                headers: {authorization: `Bearer ${token}`},
+                payload: {isCompleted: true}
+            });
+
+            expect(app.emailQueue.add).not.toHaveBeenCalled();
+        });
+
+        it('queues a mission-completed email to every emperor', async () => {
+            const token = signAccessToken(app, UserRank.captain);
+            const emperorStormtrooper = await app.prisma.stormtrooper.create({data: {callSign: 'Vader'}});
+            const emperor = await app.prisma.user.create({
+                data: {email: 'emperor@empire.com', rank: UserRank.emperor, stormtrooperId: emperorStormtrooper.id}
+            });
+
+            const res = await app.inject({
+                method: 'PATCH',
+                url: `/missions/${missionId}`,
+                headers: {authorization: `Bearer ${token}`},
+                payload: {isCompleted: true}
+            });
+
+            expect(res.statusCode).toBe(200);
+            expect(app.emailQueue.add).toHaveBeenCalledWith(
+                'mission-completed',
+                expect.objectContaining({to: emperor.email})
+            );
         });
     });
 
@@ -214,9 +251,7 @@ describe('missions', () => {
             expect(res.statusCode).toBe(200);
             const {mission} = res.json();
             expect(mission.stormtroopers).toHaveLength(2);
-            expect(mission.stormtroopers.map((s: {id: number}) => s.id).sort()).toEqual(
-                [first.id, second.id].sort()
-            );
+            expect(mission.stormtroopers.map((s: {id: number}) => s.id).sort()).toEqual([first.id, second.id].sort());
         });
 
         it('replaces the previous assignment instead of appending to it', async () => {
