@@ -10,12 +10,12 @@
     "author": "satin",
     "license": "ISC",
     "description": "skills practice",
-    "packageManager": "pnpm@11.15.0",
+    "packageManager": "pnpm@11.15.1",
     "devDependencies": {
         "@trivago/prettier-plugin-sort-imports": "^6.0.2",
         "@types/node": "^26.1.1",
         "oxlint": "^1.74.0",
-        "prettier": "^3.9.5",
+        "prettier": "^3.9.6",
         "tsx": "^4.23.1",
         "typescript": "^7.0.2"
     }
