@@ -17,8 +17,15 @@ const redisPlugin = fp(
             connectTimeout: 500
         });
 
+        await fastify.register(fastifyRedis, {
+            url,
+            namespace: 'bullMq',
+            maxRetriesPerRequest: null
+        });
+
         fastify.decorate('redisSub', fastify.redis.sub);
         fastify.decorate('redisFailFast', fastify.redis.failFast);
+        fastify.decorate('redisBullMq', fastify.redis.bullMq);
 
         fastify.decorate(
             'pushRedisEvent',
