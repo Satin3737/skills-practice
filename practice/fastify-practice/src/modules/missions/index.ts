@@ -61,7 +61,7 @@ const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         '/:id/stormtroopers',
         {schema: assignStormtroopersSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
-            void res.send({
+            res.send({
                 mission: await missionsService.assignStormtroopersToMission(req.params.id, req.body.stormtroopers)
             });
         }
