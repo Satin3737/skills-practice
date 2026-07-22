@@ -22,7 +22,7 @@ import SessionsService from './sessions/service';
 const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     const prisma = fastify.prisma;
     const sessionsService = new SessionsService(prisma, new SessionsRedisService(fastify.redisFailFast, fastify.log));
-    const usersService = new UsersService(prisma);
+    const usersService = new UsersService(prisma, fastify.emailQueue);
     const oAuthService = new OAuthService(prisma);
 
     registerAuthJobs(fastify, sessionsService);

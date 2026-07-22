@@ -1,19 +1,26 @@
 import {httpErrors} from '@fastify/sensible';
+import type {Queue} from 'bullmq';
+import EmailTemplates from '@/common/email/templates';
+import type {IEmailOptions} from '@/common/email/types';
 import type {PrismaClient, User} from '@/database/prisma/client';
 import {hashPassword, verifyPassword} from './helper';
 import type {ILoginUserData, IRegisterUserData, IUpdateUserData, IUserWithStormtrooper} from './types';
 
 class UsersService {
     private readonly db: PrismaClient;
+    private readonly emailQueue: Queue<IEmailOptions>;
 
-    public constructor(db: PrismaClient) {
+    public constructor(db: PrismaClient, emailQueue: Queue<IEmailOptions>) {
         this.db = db;
+        this.emailQueue = emailQueue;
     }
 
     public async createUser(data: IRegisterUserData): Promise<User> {
         const {email, password, callSign, rank} = data;
         const hash = await hashPassword(password);
-        return this.db.user.create({data: {email, password: hash, rank, stormtrooper: {create: {callSign}}}});
+        const user = this.db.user.create({data: {email, password: hash, rank, stormtrooper: {create: {callSign}}}});
+        void this.emailQueue.add('welcome', {to: email, ...EmailTemplates.getWelcomeTemplate(callSign)});
+        return user;
     }
 
     public async verifyUser(data: ILoginUserData): Promise<User> {

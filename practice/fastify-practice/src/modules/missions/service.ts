@@ -1,5 +1,8 @@
+import type {Queue} from 'bullmq';
+import EmailTemplates from '@/common/email/templates';
+import type {IEmailOptions} from '@/common/email/types';
 import type {IEntityListParams} from '@/common/types';
-import type {Mission, PrismaClient} from '@/database/prisma/client';
+import {type Mission, type PrismaClient, UserRank} from '@/database/prisma/client';
 import type {
     ICreatePlanetMissionsData,
     IMissionListResponse,
@@ -10,9 +13,11 @@ import type {
 
 class MissionsService {
     private readonly db: PrismaClient;
+    private readonly emailQueue: Queue<IEmailOptions>;
 
-    public constructor(db: PrismaClient) {
+    public constructor(db: PrismaClient, emailQueue: Queue<IEmailOptions>) {
         this.db = db;
+        this.emailQueue = emailQueue;
     }
 
     public async getMissions({limit, page, search}: IEntityListParams): Promise<IMissionListResponse> {
@@ -34,8 +39,21 @@ class MissionsService {
         return this.db.mission.findUniqueOrThrow({where: {id}, include: {planet: true}});
     }
 
-    public updateMission(id: number, data: IUpdateMissionData): Promise<Mission> {
-        return this.db.mission.update({where: {id}, data});
+    public async updateMission(id: number, data: IUpdateMissionData): Promise<Mission> {
+        const mission = await this.db.mission.update({where: {id}, data});
+        const planet = await this.db.planet.findUnique({where: {id: mission.planetId}});
+        const emperors = await this.db.user.findMany({where: {rank: UserRank.emperor}});
+
+        if (planet && emperors.length) {
+            for (const emperor of emperors) {
+                void this.emailQueue.add('mission-completed', {
+                    to: emperor.email,
+                    ...EmailTemplates.getMissionCompletedTemplate(mission.title, planet.name)
+                });
+            }
+        }
+
+        return mission;
     }
 
     public deleteMission(id: number): Promise<Mission> {
