@@ -5,6 +5,6 @@
             "@/*": ["./src/*"]
         }
     },
-    "include": ["src", "tests", "vitest.config.ts", "scripts"],
+    "include": ["src", "tests", "vitest.config.ts", "scripts", "prisma/seed.ts"],
     "exclude": ["src/database/prisma", "src/database/prismabox"]
 }
