@@ -15,7 +15,8 @@
         "db:migrate": "pnpm dlx prisma migrate dev",
         "db:create-migration": "pnpm dlx prisma migrate dev --create-only",
         "db:status": "pnpm dlx prisma migrate status",
-        "db:studio": "pnpm dlx prisma studio"
+        "db:studio": "pnpm dlx prisma studio",
+        "db:seed": "tsx prisma/seed.ts"
     },
     "author": "satin",
     "license": "ISC",
