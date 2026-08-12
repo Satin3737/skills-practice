@@ -16,7 +16,11 @@ const schema = Type.Object({
     GOOGLE_CLIENT_SECRET: Type.String(),
     REDIS_URL: Type.String(),
     SMTP_HOST: Type.String({default: 'localhost'}),
-    SMTP_PORT: Type.Number({default: 1025})
+    SMTP_PORT: Type.Number({default: 1025}),
+    ANTHROPIC_API_KEY: Type.String(),
+    ANTHROPIC_MODEL: Type.String(),
+    ASSISTANT_CONTEXT_WINDOW: Type.Number({default: 20}),
+    ASSISTANT_MAX_TOKENS: Type.Number({default: 1024})
 });
 
 export type IEnvConfig = Static<typeof schema>;
