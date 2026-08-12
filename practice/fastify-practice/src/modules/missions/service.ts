@@ -39,6 +39,16 @@ class MissionsService {
         return this.db.mission.findUniqueOrThrow({where: {id}, include: {planet: true}});
     }
 
+    public getMissionsByStormtrooperId(id: number, onlyIncomplete?: boolean): Promise<IMissionWithPlanet[]> {
+        return this.db.mission.findMany({
+            where: {
+                stormtroopers: {some: {id}},
+                ...(onlyIncomplete !== undefined && {isCompleted: !onlyIncomplete})
+            },
+            include: {planet: true}
+        });
+    }
+
     public async updateMission(id: number, data: IUpdateMissionData): Promise<Mission> {
         const mission = await this.db.mission.update({where: {id}, data});
         const planet = await this.db.planet.findUnique({where: {id: mission.planetId}});
