@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import type {Worker} from 'bullmq';
 import Redis from 'ioredis';
 import pino, {type Logger} from 'pino';
 import EmailService from '@/common/email/service';
@@ -18,6 +19,23 @@ class WorkersContext {
         this.redis = new Redis(redisUrl, {maxRetriesPerRequest: null});
         this.logger = pino(getLoggerConfig());
         this.emailService = new EmailService(this.logger, {host, port});
+    }
+
+    public listenShutdownProcessSignals(worker: Worker): void {
+        process.on('SIGINT', async () => this.shutdownWorker(worker, 'SIGINT'));
+        process.on('SIGTERM', async () => this.shutdownWorker(worker, 'SIGTERM'));
+    }
+
+    private async shutdownWorker(worker: Worker, signal: string): Promise<void> {
+        this.logger.info(`Shutting down worker due to ${signal}...`);
+
+        try {
+            await worker.close();
+            process.exit(0);
+        } catch (err) {
+            this.logger.error(err, 'Error while shutting down worker');
+            process.exit(1);
+        }
     }
 }
 
