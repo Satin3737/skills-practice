@@ -14,7 +14,6 @@ import {
     refreshTokenSchema,
     registerUserSchema
 } from './schemas';
-import UsersService from './service';
 import {registerAuthJobs} from './sessions/jobs';
 import SessionsRedisService from './sessions/redis';
 import SessionsService from './sessions/service';
@@ -22,7 +21,7 @@ import SessionsService from './sessions/service';
 const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     const prisma = fastify.prisma;
     const sessionsService = new SessionsService(prisma, new SessionsRedisService(fastify.redisFailFast, fastify.log));
-    const usersService = new UsersService(prisma, fastify.emailQueue);
+    const usersService = fastify.usersService;
     const oAuthService = new OAuthService(prisma);
 
     registerAuthJobs(fastify, sessionsService);

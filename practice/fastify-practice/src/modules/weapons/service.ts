@@ -2,7 +2,7 @@ import type {IEntityListParams} from '@/common/types';
 import type {PrismaClient, Weapon} from '@/database/prisma/client';
 import type {ICreateWeaponData, IUpdateWeaponData, IWeaponListResponse} from './types';
 
-class WeaponService {
+class WeaponsService {
     private readonly db: PrismaClient;
 
     public constructor(db: PrismaClient) {
@@ -76,4 +76,4 @@ class WeaponService {
     }
 }
 
-export default WeaponService;
+export default WeaponsService;

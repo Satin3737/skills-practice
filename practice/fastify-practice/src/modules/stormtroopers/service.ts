@@ -2,7 +2,7 @@ import type {IEntityListParams} from '@/common/types';
 import type {PrismaClient, Stormtrooper} from '@/database/prisma/client';
 import type {ICreateStormtrooperData, IStormtrooperListResponse, IUpdateStormtrooperData} from './types';
 
-class StormtrooperService {
+class StormtroopersService {
     private readonly db: PrismaClient;
 
     public constructor(db: PrismaClient) {
@@ -41,4 +41,4 @@ class StormtrooperService {
     }
 }
 
-export default StormtrooperService;
+export default StormtroopersService;

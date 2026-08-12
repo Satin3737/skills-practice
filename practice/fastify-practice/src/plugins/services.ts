@@ -1,9 +1,10 @@
 import fp from 'fastify-plugin';
 import EmailService from '@/common/email/service';
+import UsersService from '@/modules/auth/service';
 import MissionFeed from '@/modules/missions/feed';
 import MissionsService from '@/modules/missions/service';
-import StormtrooperService from '@/modules/stormtroopers/service';
-import WeaponService from '@/modules/weapons/service';
+import StormtroopersService from '@/modules/stormtroopers/service';
+import WeaponsService from '@/modules/weapons/service';
 
 const servicesPlugin = fp(
     async fastify => {
@@ -15,12 +16,13 @@ const servicesPlugin = fp(
             })
         );
 
-        fastify.decorate('stormtrooperService', new StormtrooperService(fastify.prisma));
+        fastify.decorate('usersService', new UsersService(fastify.prisma, fastify.emailQueue));
+        fastify.decorate('stormtroopersService', new StormtroopersService(fastify.prisma));
         fastify.decorate('missionsService', new MissionsService(fastify.prisma, fastify.emailQueue));
-        fastify.decorate('weaponsService', new WeaponService(fastify.prisma));
+        fastify.decorate('weaponsService', new WeaponsService(fastify.prisma));
         fastify.decorate('missionFeed', new MissionFeed());
     },
-    {name: 'services', dependencies: ['prisma', 'env']}
+    {name: 'services', dependencies: ['prisma', 'queue', 'env']}
 );
 
 export default servicesPlugin;

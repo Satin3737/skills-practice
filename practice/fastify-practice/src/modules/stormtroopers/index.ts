@@ -10,7 +10,7 @@ import {
 } from './schemas';
 
 const stormtroopers: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
-    const stormtroopersService = fastify.stormtrooperService;
+    const stormtroopersService = fastify.stormtroopersService;
     const weaponsService = fastify.weaponsService;
 
     fastify.get('/', {schema: getStormtroopersSchema}, async (req, res): Promise<void> => {
