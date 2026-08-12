@@ -16,10 +16,10 @@
         "@fastify/cors": "^11.3.0",
         "@trpc/client": "^11.18.0",
         "@trpc/server": "^11.18.0",
-        "fastify": "^5.10.0",
+        "fastify": "^5.11.3",
         "zod": "^4.4.3"
     },
     "devDependencies": {
-        "vite": "^8.1.5"
+        "vite": "^8.2.1"
     }
 }
