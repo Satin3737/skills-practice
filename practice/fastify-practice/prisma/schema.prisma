@@ -4,8 +4,9 @@ generator client {
 }
 
 generator prismabox {
-  provider = "prismabox"
-  output   = "../src/database/prismabox"
+  provider     = "prismabox"
+  output       = "../src/database/prismabox"
+  useJsonTypes = "transformer"
 }
 
 datasource db {
@@ -31,15 +32,21 @@ enum AccountProvider {
   google
 }
 
+enum ChatRole {
+  user
+  assistant
+}
+
 model User {
-  id             Int          @id @default(autoincrement())
-  email          String       @unique
+  id             Int           @id @default(autoincrement())
+  email          String        @unique
   password       String?
-  rank           UserRank     @default(trooper)
-  stormtrooper   Stormtrooper @relation(fields: [stormtrooperId], references: [id], onDelete: Cascade)
-  stormtrooperId Int          @unique
+  rank           UserRank      @default(trooper)
+  stormtrooper   Stormtrooper  @relation(fields: [stormtrooperId], references: [id], onDelete: Cascade)
+  stormtrooperId Int           @unique
   accounts       Account[]
   sessions       Session[]
+  chatSessions   ChatSession[]
 }
 
 model Account {
@@ -97,4 +104,23 @@ model Planet {
   type     PlanetType @default(exoplanet)
   hasRings Boolean    @default(false)
   missions Mission[]
+}
+
+model ChatSession {
+  id        Int           @id @default(autoincrement())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  messages  ChatMessage[]
+  createdAt DateTime      @default(now())
+
+  @@index([userId])
+}
+
+model ChatMessage {
+  id        Int         @id @default(autoincrement())
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId Int
+  role      ChatRole
+  content   String
+  createdAt DateTime    @default(now())
 }
