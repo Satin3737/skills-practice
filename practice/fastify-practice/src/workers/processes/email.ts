@@ -16,3 +16,5 @@ const worker = new Worker<IEmailOptions>(
 worker.on('failed', (_, err) => {
     logger.error(err, 'Failed to send email');
 });
+
+workersContext.listenShutdownProcessSignals(worker);
