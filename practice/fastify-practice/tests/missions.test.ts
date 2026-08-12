@@ -279,4 +279,67 @@ describe('missions', () => {
             expect(mission.stormtroopers[0].id).toBe(second.id);
         });
     });
+
+    describe('MissionsService.getMissionsByStormtrooperId', () => {
+        it('returns only missions assigned to that stormtrooper', async () => {
+            const trooper = await app.prisma.stormtrooper.create({data: {callSign: 'TK-421'}});
+            const otherTrooper = await app.prisma.stormtrooper.create({data: {callSign: 'TK-422'}});
+
+            const assigned = await app.prisma.mission.create({
+                data: {title: 'Assigned mission', planetId, stormtroopers: {connect: {id: trooper.id}}}
+            });
+            await app.prisma.mission.create({
+                data: {title: "Someone else's mission", planetId, stormtroopers: {connect: {id: otherTrooper.id}}}
+            });
+
+            const missions = await app.missionsService.getMissionsByStormtrooperId(trooper.id);
+
+            expect(missions).toHaveLength(1);
+            expect(missions[0].id).toBe(assigned.id);
+        });
+
+        it('returns only incomplete missions when onlyIncomplete is true', async () => {
+            const trooper = await app.prisma.stormtrooper.create({data: {callSign: 'TK-421'}});
+            const incomplete = await app.prisma.mission.create({
+                data: {title: 'Still going', planetId, stormtroopers: {connect: {id: trooper.id}}}
+            });
+            await app.prisma.mission.create({
+                data: {title: 'Already done', planetId, isCompleted: true, stormtroopers: {connect: {id: trooper.id}}}
+            });
+
+            const missions = await app.missionsService.getMissionsByStormtrooperId(trooper.id, true);
+
+            expect(missions).toHaveLength(1);
+            expect(missions[0].id).toBe(incomplete.id);
+        });
+
+        it('returns only completed missions when onlyIncomplete is false', async () => {
+            const trooper = await app.prisma.stormtrooper.create({data: {callSign: 'TK-421'}});
+            await app.prisma.mission.create({
+                data: {title: 'Still going', planetId, stormtroopers: {connect: {id: trooper.id}}}
+            });
+            const completed = await app.prisma.mission.create({
+                data: {title: 'Already done', planetId, isCompleted: true, stormtroopers: {connect: {id: trooper.id}}}
+            });
+
+            const missions = await app.missionsService.getMissionsByStormtrooperId(trooper.id, false);
+
+            expect(missions).toHaveLength(1);
+            expect(missions[0].id).toBe(completed.id);
+        });
+
+        it('returns every mission regardless of completion when onlyIncomplete is omitted', async () => {
+            const trooper = await app.prisma.stormtrooper.create({data: {callSign: 'TK-421'}});
+            await app.prisma.mission.create({
+                data: {title: 'Still going', planetId, stormtroopers: {connect: {id: trooper.id}}}
+            });
+            await app.prisma.mission.create({
+                data: {title: 'Already done', planetId, isCompleted: true, stormtroopers: {connect: {id: trooper.id}}}
+            });
+
+            const missions = await app.missionsService.getMissionsByStormtrooperId(trooper.id);
+
+            expect(missions).toHaveLength(2);
+        });
+    });
 });
