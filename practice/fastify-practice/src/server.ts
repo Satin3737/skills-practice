@@ -25,6 +25,24 @@ class Server {
     public async listen(): Promise<void> {
         try {
             await this.app.listen({port: this.app.config.PORT});
+            this.listenShutdownProcessSignals();
+        } catch (err) {
+            this.app.log.error(err);
+            process.exit(1);
+        }
+    }
+
+    private listenShutdownProcessSignals(): void {
+        process.on('SIGINT', () => this.shutdown('SIGINT'));
+        process.on('SIGTERM', () => this.shutdown('SIGTERM'));
+    }
+
+    private async shutdown(signal: string): Promise<void> {
+        this.app.log.info(`Shutting down server due to ${signal}...`);
+
+        try {
+            await this.app.close();
+            process.exit(0);
         } catch (err) {
             this.app.log.error(err);
             process.exit(1);
