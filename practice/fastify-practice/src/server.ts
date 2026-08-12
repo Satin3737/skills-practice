@@ -1,7 +1,6 @@
 import autoload from '@fastify/autoload';
 import Fastify, {type FastifyInstance} from 'fastify';
 import path from 'path';
-import {fileURLToPath} from 'url';
 import {getLoggerConfig} from '@/common/logger';
 
 class Server {
@@ -9,7 +8,7 @@ class Server {
     private readonly srcDir: string;
 
     public constructor() {
-        this.srcDir = path.dirname(fileURLToPath(import.meta.url));
+        this.srcDir = import.meta.dirname;
 
         this.app = Fastify({
             logger: getLoggerConfig(),
