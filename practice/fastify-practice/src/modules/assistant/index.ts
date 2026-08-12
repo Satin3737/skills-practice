@@ -40,12 +40,15 @@ const assistant: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         },
         async (socket, req): Promise<void> => {
             const sessionId = req.params.id;
-            const user = await usersService.getCurrentUser(req.user.id);
-            const {rank, stormtrooperId, stormtrooper} = user;
-            const prompt = assistant.buildPrompt(stormtrooper.callSign, rank);
+
+            const sessionContextPromise = usersService.getCurrentUser(req.user.id).then(user => ({
+                stormtrooperId: user.stormtrooperId,
+                prompt: assistant.buildPrompt(user.stormtrooper.callSign, user.rank)
+            }));
 
             socket.on('message', async message => {
                 try {
+                    const {stormtrooperId, prompt} = await sessionContextPromise;
                     const parsedMessage = JSON.parse(message.toString());
 
                     if (!Check(socketMessageSchema, parsedMessage)) {
