@@ -5,11 +5,8 @@ import {getLoggerConfig} from '@/common/logger';
 
 class Server {
     public readonly app: FastifyInstance;
-    private readonly srcDir: string;
 
     public constructor() {
-        this.srcDir = import.meta.dirname;
-
         this.app = Fastify({
             logger: getLoggerConfig(),
             ajv: {customOptions: {allErrors: true}}
@@ -17,8 +14,9 @@ class Server {
     }
 
     public async build(): Promise<FastifyInstance> {
-        await this.app.register(autoload, {dir: path.join(this.srcDir, 'plugins'), maxDepth: 1});
-        await this.app.register(autoload, {dir: path.join(this.srcDir, 'modules'), maxDepth: 1});
+        const srcDir = import.meta.dirname;
+        await this.app.register(autoload, {dir: path.join(srcDir, 'plugins'), maxDepth: 1});
+        await this.app.register(autoload, {dir: path.join(srcDir, 'modules'), maxDepth: 1});
         return this.app;
     }
 
