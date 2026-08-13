@@ -76,12 +76,15 @@ class Assistant {
     }
 
     public async runToolLoop(context: MessageParam[], prompt: string, stormtrooperId: number): Promise<string> {
+        const reasonStr = 'tool_use' as const;
+        const resultStr = 'tool_result' as const;
+
         let messages = context;
         let response = await this.createMessage({prompt, context});
 
-        for (let i = 0; i < this.maxIterations && response.stop_reason === 'tool_use'; i++) {
+        for (let i = 0; i < this.maxIterations && response.stop_reason === reasonStr; i++) {
             const toolUseBlocks = response.content.filter((block): block is ToolUseBlock & {name: ITools} => {
-                return block.type === 'tool_use' && this.isToolName(block.name);
+                return block.type === reasonStr && this.isToolName(block.name);
             });
 
             const toolResults: ToolResultBlockParam[] = await Promise.all(
@@ -93,7 +96,7 @@ class Assistant {
                     });
 
                     return {
-                        type: 'tool_result',
+                        type: resultStr,
                         tool_use_id: block.id,
                         content: JSON.stringify(toolResult)
                     };
@@ -109,7 +112,7 @@ class Assistant {
             response = await this.createMessage({prompt, context: messages});
         }
 
-        if (response.stop_reason === 'tool_use') throw new MaxToolIterationsError();
+        if (response.stop_reason === reasonStr) throw new MaxToolIterationsError();
 
         return response.content.map(block => (block.type === 'text' ? block.text : '')).join('\n');
     }
