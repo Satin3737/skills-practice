@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import '@/common/load-env';
 import type {Worker} from 'bullmq';
 import Redis from 'ioredis';
 import pino, {type Logger} from 'pino';

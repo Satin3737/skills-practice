@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import {Database} from '@/database';
 import {AccountProvider, PlanetType, UserRank} from '@/database/prisma/enums';
 import {hashPassword} from '@/modules/auth/helper';

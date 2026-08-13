@@ -1,12 +1,10 @@
 import {execSync} from 'child_process';
-import {config} from 'dotenv';
 import path from 'path';
 import {Client} from 'pg';
-import {fileURLToPath} from 'url';
 
-const rootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const rootDir = path.dirname(import.meta.dirname);
 
-config({path: path.join(rootDir, '.env.test'), override: true});
+process.loadEnvFile(path.join(rootDir, '.env.test'));
 
 const testDbUrl = new URL(process.env.DATABASE_URL!);
 const targetDb = testDbUrl.pathname.slice(1);

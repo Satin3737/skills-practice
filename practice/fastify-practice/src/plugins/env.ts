@@ -27,7 +27,7 @@ export type IEnvConfig = Static<typeof schema>;
 
 const envPlugin = fp(
     async fastify => {
-        await fastify.register(env, {dotenv: true, schema});
+        await fastify.register(env, {schema});
     },
     {name: 'env'}
 );

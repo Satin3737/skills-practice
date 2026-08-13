@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import '@/common/load-env';
 import type {LoggerOptions} from 'pino';
 import {Environment} from './const';
 
