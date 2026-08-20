@@ -1,13 +1,13 @@
 import {APIPromise, Anthropic} from '@anthropic-ai/sdk';
 import type {Message, MessageParam, ToolResultBlockParam, ToolUseBlock} from '@anthropic-ai/sdk/resources';
-import {Check} from 'typebox/value';
 import {type ChatMessage, ChatRole} from '@/database/prisma/client';
 import type {UserRank} from '@/database/prisma/enums';
 import type MissionsService from '@/modules/missions/service';
 import type StormtroopersService from '@/modules/stormtroopers/service';
 import type WeaponsService from '@/modules/weapons/service';
 import {MaxToolIterationsError} from './errors';
-import {Tools, allTools, getMyStormtrooperDataTool, getWeaponInfoTool, listMyMissionsTool} from './tools';
+import {getMyStormtrooperDataInputSchema, getWeaponInfoInputSchema, listMyMissionsInputSchema} from './schemas';
+import {Tools, allTools} from './tools';
 import type {IToolExecs, IToolHandlers, ITools} from './types';
 
 class Assistant {
@@ -142,26 +142,29 @@ class Assistant {
     }): IToolExecs[T]['res'] | null {
         switch (name) {
             case Tools.getWeaponInfo: {
-                if (!Check(getWeaponInfoTool.input_schema, input)) return null;
+                const parsed = getWeaponInfoInputSchema.safeParse(input);
+                if (!parsed.success) return null;
 
                 return this.executeTool(Tools.getWeaponInfo, {
-                    input: input,
+                    input: parsed.data,
                     weaponsService: this.services.weaponsService
                 });
             }
 
             case Tools.listMyMissions: {
-                if (!Check(listMyMissionsTool.input_schema, input)) return null;
+                const parsed = listMyMissionsInputSchema.safeParse(input);
+                if (!parsed.success) return null;
 
                 return this.executeTool(Tools.listMyMissions, {
-                    input,
+                    input: parsed.data,
                     context: {stormtrooperId},
                     missionsService: this.services.missionsService
                 });
             }
 
             case Tools.getMyData: {
-                if (!Check(getMyStormtrooperDataTool.input_schema, input)) return null;
+                const parsed = getMyStormtrooperDataInputSchema.safeParse(input);
+                if (!parsed.success) return null;
 
                 return this.executeTool(Tools.getMyData, {
                     context: {stormtrooperId},
