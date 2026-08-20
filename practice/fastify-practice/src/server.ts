@@ -1,5 +1,6 @@
 import autoload from '@fastify/autoload';
 import Fastify, {type FastifyInstance} from 'fastify';
+import {type ZodTypeProvider, serializerCompiler, validatorCompiler} from 'fastify-type-provider-zod';
 import path from 'path';
 import {getLoggerConfig} from '@/common/logger';
 
@@ -10,7 +11,10 @@ class Server {
         this.app = Fastify({
             logger: getLoggerConfig(),
             ajv: {customOptions: {allErrors: true}}
-        });
+        }).withTypeProvider<ZodTypeProvider>();
+
+        this.app.setValidatorCompiler(validatorCompiler);
+        this.app.setSerializerCompiler(serializerCompiler);
     }
 
     public async build(): Promise<FastifyInstance> {
