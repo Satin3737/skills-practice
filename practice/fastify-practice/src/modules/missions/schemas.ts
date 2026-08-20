@@ -1,15 +1,13 @@
-import {Type} from '@fastify/type-provider-typebox';
+import {z} from 'zod';
 import {byIdPSchema, paginatedListSchema} from '@/common/schemas';
-import {MissionPlain} from '@/database/prismabox/Mission';
-import {PlanetPlain} from '@/database/prismabox/Planet';
-import {StormtrooperPlain} from '@/database/prismabox/Stormtrooper';
+import {MissionPlain, PlanetPlain, StormtrooperPlain} from '@/database/models';
 
 export const getMissionsSchema = {
     querystring: paginatedListSchema,
     response: {
-        200: Type.Object({
-            missions: Type.Array(MissionPlain),
-            total: Type.Integer()
+        200: z.object({
+            missions: z.array(MissionPlain),
+            total: z.int()
         })
     }
 };
@@ -17,39 +15,38 @@ export const getMissionsSchema = {
 export const getMissionSchema = {
     params: byIdPSchema,
     response: {
-        200: Type.Object({
-            mission: Type.Object({...MissionPlain.properties, planet: PlanetPlain})
+        200: z.object({
+            mission: MissionPlain.extend({planet: PlanetPlain})
         })
     }
 };
 
 export const createMissionSchema = {
-    body: Type.Object(
-        {
-            title: Type.String({minLength: 3, maxLength: 255}),
-            briefing: Type.Optional(Type.String()),
-            isCompleted: Type.Optional(Type.Boolean()),
-            planetId: Type.Integer({minimum: 1})
-        },
-        {additionalProperties: false}
-    ),
+    body: z
+        .object({
+            title: z.string().min(3).max(255),
+            briefing: z.string().optional(),
+            isCompleted: z.boolean().optional(),
+            planetId: z.int().min(1)
+        })
+        .strict(),
     response: {
-        201: Type.Object({mission: MissionPlain})
+        201: z.object({mission: MissionPlain})
     }
 };
 
 export const updateMissionSchema = {
     params: byIdPSchema,
-    body: Type.Partial(createMissionSchema.body, {minProperties: 1, additionalProperties: false}),
+    body: createMissionSchema.body.partial().refine(data => Object.keys(data).length > 0),
     response: {
-        200: Type.Object({mission: MissionPlain})
+        200: z.object({mission: MissionPlain})
     }
 };
 
 export const deleteMissionSchema = {
     params: byIdPSchema,
     response: {
-        200: Type.Object({mission: MissionPlain})
+        200: z.object({mission: MissionPlain})
     }
 };
 
@@ -57,27 +54,24 @@ export const getMissionsByPlanetSchema = {
     params: byIdPSchema,
     querystring: paginatedListSchema,
     response: {
-        200: Type.Object({missions: Type.Array(MissionPlain), total: Type.Integer()})
+        200: z.object({missions: z.array(MissionPlain), total: z.int()})
     }
 };
 
 export const createMissionsForPlanetSchema = {
     params: byIdPSchema,
-    body: Type.Array(Type.Omit(createMissionSchema.body, ['planetId'], {additionalProperties: false})),
+    body: z.array(createMissionSchema.body.omit({planetId: true})),
     response: {
-        201: Type.Object({missions: Type.Array(MissionPlain)})
+        201: z.object({missions: z.array(MissionPlain)})
     }
 };
 
 export const assignStormtroopersSchema = {
     params: byIdPSchema,
-    body: Type.Object(
-        {stormtroopers: Type.Array(Type.Integer({minimum: 1}), {minItems: 1})},
-        {additionalProperties: false}
-    ),
+    body: z.object({stormtroopers: z.array(z.int().min(1)).min(1)}).strict(),
     response: {
-        200: Type.Object({
-            mission: Type.Object({...MissionPlain.properties, stormtroopers: Type.Array(StormtrooperPlain)})
+        200: z.object({
+            mission: MissionPlain.extend({stormtroopers: z.array(StormtrooperPlain)})
         })
     }
 };

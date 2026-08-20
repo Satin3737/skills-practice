@@ -1,13 +1,13 @@
-import {Type} from '@fastify/type-provider-typebox';
+import {z} from 'zod';
 import {byIdPSchema, paginatedListSchema} from '@/common/schemas';
-import {WeaponPlain} from '@/database/prismabox/Weapon';
+import {WeaponPlain} from '@/database/models';
 
 export const getWeaponsSchema = {
     querystring: paginatedListSchema,
     response: {
-        200: Type.Object({
-            weapons: Type.Array(WeaponPlain),
-            total: Type.Integer()
+        200: z.object({
+            weapons: z.array(WeaponPlain),
+            total: z.int()
         })
     }
 };
@@ -15,62 +15,61 @@ export const getWeaponsSchema = {
 export const getWeaponSchema = {
     params: byIdPSchema,
     response: {
-        200: Type.Object({weapon: WeaponPlain})
+        200: z.object({weapon: WeaponPlain})
     }
 };
 
 export const createWeaponSchema = {
-    body: Type.Object(
-        {
-            mark: Type.String({minLength: 3, maxLength: 255}),
-            damage: Type.Integer({minimum: 1}),
-            isDeadly: Type.Optional(Type.Boolean())
-        },
-        {additionalProperties: false}
-    ),
+    body: z
+        .object({
+            mark: z.string().min(3).max(255),
+            damage: z.int().min(1),
+            isDeadly: z.boolean().optional()
+        })
+        .strict(),
     response: {
-        201: Type.Object({weapon: WeaponPlain})
+        201: z.object({weapon: WeaponPlain})
     }
 };
 
 export const updateWeaponSchema = {
     params: byIdPSchema,
-    body: Type.Partial(createWeaponSchema.body, {minProperties: 1, additionalProperties: false}),
+    body: createWeaponSchema.body.partial().refine(data => Object.keys(data).length > 0),
     response: {
-        200: Type.Object({weapon: WeaponPlain})
+        200: z.object({weapon: WeaponPlain})
     }
 };
 
 export const deleteWeaponSchema = {
     params: byIdPSchema,
     response: {
-        200: Type.Object({weapon: WeaponPlain})
+        200: z.object({weapon: WeaponPlain})
     }
 };
 
-const stormtrooperWeaponParams = Type.Object({
-    id: byIdPSchema.properties.id,
-    weaponId: Type.Integer()
+const stormtrooperWeaponParams = z.object({
+    id: byIdPSchema.shape.id,
+    weaponId: z.coerce.number().int()
 });
 
 export const getStormtrooperWeaponsSchema = {
     params: byIdPSchema,
     querystring: paginatedListSchema,
     response: {
-        200: Type.Object({weapons: Type.Array(WeaponPlain), total: Type.Integer()})
+        200: z.object({weapons: z.array(WeaponPlain), total: z.int()})
     }
 };
 
 export const assignWeaponSchema = {
     params: stormtrooperWeaponParams,
     response: {
-        200: Type.Object({weapon: WeaponPlain})
+        200: z.object({weapon: WeaponPlain})
     }
 };
 
 export const unassignWeaponSchema = {
     params: stormtrooperWeaponParams,
     response: {
-        200: Type.Object({weapon: WeaponPlain})
+        200: z.object({weapon: WeaponPlain})
     }
 };

@@ -1,13 +1,13 @@
-import {Type} from '@fastify/type-provider-typebox';
+import {z} from 'zod';
 import {byIdPSchema, paginatedListSchema} from '@/common/schemas';
-import {StormtrooperPlain} from '@/database/prismabox/Stormtrooper';
+import {StormtrooperPlain} from '@/database/models';
 
 export const getStormtroopersSchema = {
     querystring: paginatedListSchema,
     response: {
-        200: Type.Object({
-            stormtroopers: Type.Array(StormtrooperPlain),
-            total: Type.Integer()
+        200: z.object({
+            stormtroopers: z.array(StormtrooperPlain),
+            total: z.int()
         })
     }
 };
@@ -15,33 +15,32 @@ export const getStormtroopersSchema = {
 export const getStormtrooperSchema = {
     params: byIdPSchema,
     response: {
-        200: Type.Object({stormtrooper: StormtrooperPlain})
+        200: z.object({stormtrooper: StormtrooperPlain})
     }
 };
 
 export const createStormtrooperSchema = {
-    body: Type.Object(
-        {
-            callSign: Type.String({minLength: 3, maxLength: 255})
-        },
-        {additionalProperties: false}
-    ),
+    body: z
+        .object({
+            callSign: z.string().min(3).max(255)
+        })
+        .strict(),
     response: {
-        201: Type.Object({stormtrooper: StormtrooperPlain})
+        201: z.object({stormtrooper: StormtrooperPlain})
     }
 };
 
 export const updateStormtrooperSchema = {
     params: byIdPSchema,
-    body: Type.Partial(createStormtrooperSchema.body, {minProperties: 1, additionalProperties: false}),
+    body: createStormtrooperSchema.body.partial().refine(data => Object.keys(data).length > 0),
     response: {
-        200: Type.Object({stormtrooper: StormtrooperPlain})
+        200: z.object({stormtrooper: StormtrooperPlain})
     }
 };
 
 export const deleteStormtrooperSchema = {
     params: byIdPSchema,
     response: {
-        200: Type.Object({stormtrooper: StormtrooperPlain})
+        200: z.object({stormtrooper: StormtrooperPlain})
     }
 };

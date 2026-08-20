@@ -1,41 +1,37 @@
-import {Type} from '@fastify/type-provider-typebox';
+import {z} from 'zod';
 import {byIdPSchema} from '@/common/schemas';
+import {StormtrooperPlain, UserPlain} from '@/database/models';
 import {UserRank} from '@/database/prisma/enums';
-import {StormtrooperPlain} from '@/database/prismabox/Stormtrooper';
-import {UserPlain} from '@/database/prismabox/User';
 import {createStormtrooperSchema} from '@/modules/stormtroopers/schemas';
 
-const UserPlainPublic = Type.Object(
-    Object.fromEntries(Object.entries(UserPlain.properties).filter(([key]) => key !== 'password'))
-);
+const UserPlainPublic = UserPlain.omit({password: true});
 
-const passwordSchema = Type.String({minLength: 6, maxLength: 255});
+const passwordSchema = z.string().min(6).max(255);
 
 export const registerUserSchema = {
     security: [],
-    body: Type.Object(
-        {
-            email: Type.String({pattern: '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'}),
+    body: z
+        .object({
+            email: z.string().regex(/^[^@\s]+@[^@\s]+\.[^@\s]+$/),
             password: passwordSchema,
-            rank: Type.Optional(Type.Enum(UserRank)),
-            ...createStormtrooperSchema.body.properties
-        },
-        {additionalProperties: false}
-    ),
+            rank: z.enum(UserRank).optional(),
+            ...createStormtrooperSchema.body.shape
+        })
+        .strict(),
     response: {
-        201: Type.Object({user: UserPlainPublic})
+        201: z.object({user: UserPlainPublic})
     }
 };
 
 export const loginUserSchema = {
     security: [],
-    body: Type.Pick(registerUserSchema.body, ['email', 'password'], {additionalProperties: false}),
+    body: registerUserSchema.body.pick({email: true, password: true}),
     response: {
-        200: Type.Object({
-            token: Type.String()
+        200: z.object({
+            token: z.string()
         }),
-        401: Type.Object({
-            message: Type.String()
+        401: z.object({
+            message: z.string()
         })
     }
 };
@@ -43,8 +39,8 @@ export const loginUserSchema = {
 export const oauthCallbackSchema = {
     security: [],
     response: {
-        200: Type.Object({
-            token: Type.String()
+        200: z.object({
+            token: z.string()
         })
     }
 };
@@ -52,8 +48,8 @@ export const oauthCallbackSchema = {
 export const refreshTokenSchema = {
     security: [],
     response: {
-        200: Type.Object({
-            token: Type.String()
+        200: z.object({
+            token: z.string()
         })
     }
 };
@@ -61,47 +57,46 @@ export const refreshTokenSchema = {
 export const logoutUserSchema = {
     security: [],
     response: {
-        200: Type.Object({
-            message: Type.String()
+        200: z.object({
+            message: z.string()
         })
     }
 };
 
 export const getCurrentUserSchema = {
     response: {
-        200: Type.Object({
-            user: Type.Object({...UserPlainPublic.properties, stormtrooper: StormtrooperPlain})
+        200: z.object({
+            user: UserPlainPublic.extend({stormtrooper: StormtrooperPlain})
         })
     }
 };
 
 export const updateUserSchema = {
     params: byIdPSchema,
-    body: Type.Partial(registerUserSchema.body, {minProperties: 1, additionalProperties: false}),
+    body: registerUserSchema.body.partial().refine(data => Object.keys(data).length > 0),
     response: {
-        200: Type.Object({user: UserPlainPublic})
+        200: z.object({user: UserPlainPublic})
     }
 };
 
 export const changeUserRankSchema = {
     params: byIdPSchema,
-    body: Type.Object({
-        rank: Type.Enum(UserRank)
+    body: z.object({
+        rank: z.enum(UserRank)
     }),
     response: {
-        200: Type.Object({user: UserPlainPublic})
+        200: z.object({user: UserPlainPublic})
     }
 };
 
 export const changeUserPasswordSchema = {
-    body: Type.Object(
-        {
-            password: Type.Optional(passwordSchema),
+    body: z
+        .object({
+            password: passwordSchema.optional(),
             newPassword: passwordSchema
-        },
-        {additionalProperties: false}
-    ),
+        })
+        .strict(),
     response: {
-        200: Type.Object({message: Type.String()})
+        200: z.object({message: z.string()})
     }
 };

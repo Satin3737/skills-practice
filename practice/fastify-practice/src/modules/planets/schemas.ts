@@ -1,14 +1,14 @@
-import {Type} from '@fastify/type-provider-typebox';
+import {z} from 'zod';
 import {byIdPSchema, paginatedListSchema} from '@/common/schemas';
+import {PlanetPlain} from '@/database/models';
 import {PlanetType} from '@/database/prisma/enums';
-import {PlanetPlain} from '@/database/prismabox/Planet';
 
 export const getPlanetsSchema = {
     querystring: paginatedListSchema,
     response: {
-        200: Type.Object({
-            planets: Type.Array(PlanetPlain),
-            total: Type.Integer()
+        200: z.object({
+            planets: z.array(PlanetPlain),
+            total: z.int()
         })
     }
 };
@@ -16,36 +16,35 @@ export const getPlanetsSchema = {
 export const getPlanetSchema = {
     params: byIdPSchema,
     response: {
-        200: Type.Object({planet: PlanetPlain})
+        200: z.object({planet: PlanetPlain})
     }
 };
 
 export const createPlanetSchema = {
-    body: Type.Object(
-        {
-            name: Type.String({minLength: 3, maxLength: 255}),
-            size: Type.Integer({minimum: 1}),
-            type: Type.Enum(PlanetType),
-            hasRings: Type.Optional(Type.Boolean())
-        },
-        {additionalProperties: false}
-    ),
+    body: z
+        .object({
+            name: z.string().min(3).max(255),
+            size: z.int().min(1),
+            type: z.enum(PlanetType),
+            hasRings: z.boolean().optional()
+        })
+        .strict(),
     response: {
-        201: Type.Object({planet: PlanetPlain})
+        201: z.object({planet: PlanetPlain})
     }
 };
 
 export const updatePlanetSchema = {
     params: byIdPSchema,
-    body: Type.Partial(createPlanetSchema.body, {minProperties: 1, additionalProperties: false}),
+    body: createPlanetSchema.body.partial().refine(data => Object.keys(data).length > 0),
     response: {
-        200: Type.Object({planet: PlanetPlain})
+        200: z.object({planet: PlanetPlain})
     }
 };
 
 export const deletePlanetSchema = {
     params: byIdPSchema,
     response: {
-        200: Type.Object({planet: PlanetPlain})
+        200: z.object({planet: PlanetPlain})
     }
 };
