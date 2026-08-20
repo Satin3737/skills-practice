@@ -9,4 +9,5 @@ allowBuilds:
   esbuild: false
   msgpackr-extract: false
   prisma: false
+  prisma-zod-generator: true
   unrs-resolver: false

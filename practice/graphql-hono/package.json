@@ -18,7 +18,7 @@
         "@hono/node-server": "^2.1.1",
         "graphql": "^17.0.2",
         "graphql-request": "^7.4.0",
-        "hono": "^4.13.2",
+        "hono": "^4.13.3",
         "zod": "^4.4.3"
     },
     "devDependencies": {
