@@ -3,10 +3,10 @@ generator client {
   output   = "../src/database/prisma"
 }
 
-generator prismabox {
-  provider     = "prismabox"
-  output       = "../src/database/prismabox"
-  useJsonTypes = "transformer"
+generator zod {
+  provider = "prisma-zod-generator"
+  output   = "../src/database/zod"
+  config   = "./zod-generator.config.json"
 }
 
 datasource db {
