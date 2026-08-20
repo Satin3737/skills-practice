@@ -1,4 +1,4 @@
-import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
+import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
 import {RedisSubChannel} from '@/common/const';
 import {UserRank} from '@/database/prisma/enums';
 import {MissionsFeedEvents} from './const';
@@ -12,7 +12,7 @@ import {
 import {subscribeToMissionsFeed} from './subscriber';
 import type {IMissionsFeedClient} from './types';
 
-const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
+const missions: FastifyPluginAsyncZod = async (fastify): Promise<void> => {
     const missionsService = fastify.missionsService;
     const missionFeed = fastify.missionFeed;
 
@@ -22,7 +22,7 @@ const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         '/',
         {schema: getMissionsSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
-            res.send(await missionsService.getMissions(req.query));
+            void res.send(await missionsService.getMissions(req.query));
         }
     );
 
@@ -30,7 +30,7 @@ const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         '/:id',
         {schema: getMissionSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
-            res.send({mission: await missionsService.getMissionById(req.params.id)});
+            void res.send({mission: await missionsService.getMissionById(req.params.id)});
         }
     );
 
@@ -45,7 +45,7 @@ const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
                 data: {mission}
             });
 
-            res.send({mission});
+            void res.send({mission});
         }
     );
 
@@ -53,7 +53,7 @@ const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         '/:id',
         {schema: deleteMissionSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
-            res.send({mission: await missionsService.deleteMission(req.params.id)});
+            void res.send({mission: await missionsService.deleteMission(req.params.id)});
         }
     );
 
@@ -61,14 +61,14 @@ const missions: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         '/:id/stormtroopers',
         {schema: assignStormtroopersSchema, onRequest: fastify.authGuard(UserRank.captain)},
         async (req, res): Promise<void> => {
-            res.send({
+            void res.send({
                 mission: await missionsService.assignStormtroopersToMission(req.params.id, req.body.stormtroopers)
             });
         }
     );
 
     fastify.get('/feed', async (_, res): Promise<void> => {
-        res.hijack();
+        void res.hijack();
 
         res.raw.writeHead(200, {
             'Content-Type': 'text/event-stream',

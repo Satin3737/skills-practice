@@ -1,5 +1,4 @@
-import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
-import {Check} from 'typebox/value';
+import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
 import {MaxToolIterationsError} from '@/common/ai/errors';
 import {UserRank} from '@/database/prisma/enums';
 import {SocketMessageType} from './const';
@@ -12,7 +11,7 @@ import {
 } from './schemas';
 import AssistantService from './service';
 
-const assistant: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
+const assistant: FastifyPluginAsyncZod = async (fastify): Promise<void> => {
     const assistant = fastify.assistant;
     const assistantService = new AssistantService(fastify.prisma, assistant);
     const usersService = fastify.usersService;
@@ -20,15 +19,17 @@ const assistant: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     fastify.addHook('onRequest', fastify.authGuard(UserRank.trooper));
 
     fastify.post('/sessions', {schema: createChatSessionSchema}, async (req, res): Promise<void> => {
-        res.code(201).send({chatSession: await assistantService.createChatSession({userId: req.user.id})});
+        void res.code(201).send({chatSession: await assistantService.createChatSession({userId: req.user.id})});
     });
 
     fastify.get('/sessions', {schema: getChatSessionsSchema}, async (req, res): Promise<void> => {
-        res.code(200).send({chatSessions: await assistantService.getChatSessions(req.user.id)});
+        void res.code(200).send({chatSessions: await assistantService.getChatSessions(req.user.id)});
     });
 
     fastify.get('/sessions/:id/messages', {schema: getChatMessagesSchema}, async (req, res): Promise<void> => {
-        res.code(200).send({chatMessages: await assistantService.getChatSessionMessages(req.params.id, req.user.id)});
+        void res
+            .code(200)
+            .send({chatMessages: await assistantService.getChatSessionMessages(req.params.id, req.user.id)});
     });
 
     fastify.get(
@@ -49,9 +50,9 @@ const assistant: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             socket.on('message', async message => {
                 try {
                     const {stormtrooperId, prompt} = await sessionContextPromise;
-                    const parsedMessage = JSON.parse(message.toString());
+                    const parsed = socketMessageSchema.safeParse(JSON.parse(message.toString()));
 
-                    if (!Check(socketMessageSchema, parsedMessage)) {
+                    if (!parsed.success) {
                         return socket.send(
                             JSON.stringify({
                                 type: SocketMessageType.error,
@@ -62,7 +63,7 @@ const assistant: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
                     const content = await assistantService.processMessage(
                         sessionId,
-                        parsedMessage.content,
+                        parsed.data.content,
                         stormtrooperId,
                         prompt
                     );

@@ -1,5 +1,5 @@
 import {httpErrors} from '@fastify/sensible';
-import type {FastifyPluginAsyncTypebox} from '@fastify/type-provider-typebox';
+import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
 import {AccountProvider, UserRank} from '@/database/prisma/enums';
 import {RefreshCookieName, TokenTypes, UserRankValue, refreshCookieOptions} from './const';
 import {hashPassword, startSession, verifyPassword} from './helper';
@@ -18,7 +18,7 @@ import {registerAuthJobs} from './sessions/jobs';
 import SessionsRedisService from './sessions/redis';
 import SessionsService from './sessions/service';
 
-const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
+const auth: FastifyPluginAsyncZod = async (fastify): Promise<void> => {
     const prisma = fastify.prisma;
     const sessionsService = new SessionsService(prisma, new SessionsRedisService(fastify.redisFailFast, fastify.log));
     const usersService = fastify.usersService;
@@ -30,7 +30,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         '/register',
         {schema: registerUserSchema, config: {rateLimit: {max: 5}}},
         async (req, res): Promise<void> => {
-            res.code(201).send({user: await usersService.createUser(req.body)});
+            void res.code(201).send({user: await usersService.createUser(req.body)});
         }
     );
 
@@ -39,20 +39,20 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         {schema: loginUserSchema, config: {rateLimit: {max: 5}}},
         async (req, res): Promise<void> => {
             const user = await usersService.verifyUser(req.body);
-            res.send({token: await startSession(res, sessionsService, user)});
+            void res.send({token: await startSession(res, sessionsService, user)});
         }
     );
 
     fastify.get('/github/callback', {schema: oauthCallbackSchema}, async (req, res): Promise<void> => {
         const {token} = await fastify.githubOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
         const user = await oAuthService.login(AccountProvider.github, token);
-        res.send({token: await startSession(res, sessionsService, user)});
+        void res.send({token: await startSession(res, sessionsService, user)});
     });
 
     fastify.get('/google/callback', {schema: oauthCallbackSchema}, async (req, res): Promise<void> => {
         const {token} = await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
         const user = await oAuthService.login(AccountProvider.google, token);
-        res.send({token: await startSession(res, sessionsService, user)});
+        void res.send({token: await startSession(res, sessionsService, user)});
     });
 
     fastify.post(
@@ -75,7 +75,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             const user = await usersService.getUserById(id);
             const accessToken = await res.jwtSign({sub: user.id, rank: user.rank, tokenType: TokenTypes.access});
 
-            res.send({token: accessToken});
+            void res.send({token: accessToken});
         }
     );
 
@@ -88,8 +88,8 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             fastify.log.info('Force logout');
         }
 
-        res.clearCookie(RefreshCookieName, {path: refreshCookieOptions.path});
-        res.send({message: 'Logout successfully'});
+        void res.clearCookie(RefreshCookieName, {path: refreshCookieOptions.path});
+        void res.send({message: 'Logout successfully'});
     });
 
     fastify.post('/logout-all', {schema: logoutUserSchema}, async (req, res): Promise<void> => {
@@ -101,15 +101,15 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             fastify.log.info('Force logout');
         }
 
-        res.clearCookie(RefreshCookieName, {path: refreshCookieOptions.path});
-        res.send({message: 'Logout successfully'});
+        void res.clearCookie(RefreshCookieName, {path: refreshCookieOptions.path});
+        void res.send({message: 'Logout successfully'});
     });
 
     fastify.get(
         '/me',
         {schema: getCurrentUserSchema, onRequest: fastify.authGuard(UserRank.trooper)},
         async (req, res): Promise<void> => {
-            res.send({user: await usersService.getCurrentUser(req.user.id)});
+            void res.send({user: await usersService.getCurrentUser(req.user.id)});
         }
     );
 
@@ -126,7 +126,7 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
 
             if (targetRank >= callerRank || callerRank < newRank) throw httpErrors.forbidden();
 
-            res.send({user: await usersService.updateUser(targetId, req.body)});
+            void res.send({user: await usersService.updateUser(targetId, req.body)});
         }
     );
 
@@ -153,10 +153,10 @@ const auth: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
                 await usersService.updateUser(id, {password: await hashPassword(newPassword)});
                 await sessionsService.deleteAllSessions(id);
 
-                res.clearCookie(RefreshCookieName, {path: refreshCookieOptions.path});
+                void res.clearCookie(RefreshCookieName, {path: refreshCookieOptions.path});
             }
 
-            res.send({message: 'Password updated successfully'});
+            void res.send({message: 'Password updated successfully'});
         }
     );
 };
