@@ -14,6 +14,7 @@
         "db:generate": "pnpm dlx prisma generate",
         "db:migrate": "pnpm dlx prisma migrate dev",
         "db:create-migration": "pnpm dlx prisma migrate dev --create-only",
+        "db:migrate-deploy": "pnpm dlx prisma migrate deploy",
         "db:status": "pnpm dlx prisma migrate status",
         "db:studio": "pnpm dlx prisma studio",
         "db:seed": "tsx prisma/seed.ts"
@@ -49,6 +50,7 @@
         "nodemailer": "^9.0.5",
         "pg": "^8.23.0",
         "pino": "^10.3.1",
+        "pm2": "^7.0.3",
         "toad-scheduler": "^4.1.0",
         "zod": "^4.4.3"
     },
