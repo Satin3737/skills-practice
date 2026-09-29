@@ -14,10 +14,10 @@
     "description": "form handling practice",
     "dependencies": {
         "jquery": "^4.0.0",
-        "zod": "^4.4.3"
+        "zod": "^4.6.5"
     },
     "devDependencies": {
         "@types/jquery": "^4.0.1",
-        "vite": "^8.2.1"
+        "vite": "^8.3.1"
     }
 }

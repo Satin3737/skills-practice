@@ -6,16 +6,17 @@
     "type": "module",
     "scripts": {
         "dev": "tsx esbuild-scripts/dev.ts",
-        "build": "tsx esbuild-scripts/build.ts",
+        "build": "tsc && tsx esbuild-scripts/build.ts && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
         "start": "node dist/app.js"
     },
     "author": "satin",
     "license": "ISC",
     "description": "server practice",
     "dependencies": {
-        "zod": "^4.4.3"
+        "zod": "^4.6.5"
     },
     "devDependencies": {
-        "esbuild": "^0.28.2"
+        "esbuild": "^0.28.2",
+        "tsc-alias": "^1.9.5"
     }
 }
