@@ -25,7 +25,6 @@ export default defineConfig({
         'typescript/no-duplicate-enum-values': 'off',
         'react/rules-of-hooks': 'error',
         'react/exhaustive-deps': 'warn',
-        'react/react-compiler': 'warn',
         'react/only-export-components': ['warn', {allowConstantExport: true}]
     }
 });
