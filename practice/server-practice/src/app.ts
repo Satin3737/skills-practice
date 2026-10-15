@@ -3,7 +3,7 @@ import http, {Server} from 'http';
 import {BaseUrl, Port, StorageDir} from '@/const';
 import {TodoController, staticHandler} from '@/controllers';
 import {Router} from '@/router';
-import {getNotFoundPage} from '@/templates';
+import {getNotFoundPage, getServerErrorPage} from '@/templates';
 import {type IMessage, type IMethods, type IStrictMessage, Methods, MimeTypes} from '@/types';
 
 class App {
@@ -44,7 +44,7 @@ class App {
 
     private handleServerError(res: IMessage['res'], err: unknown): void {
         console.error('Unhandled error in handler:', err);
-        if (!res.headersSent) res.writeHead(500).end('Internal server error');
+        if (!res.headersSent) res.writeHead(500, {'Content-Type': MimeTypes.html}).end(getServerErrorPage(), 'utf-8');
     }
 
     private checkUrlAndMethodIsValid(req: IMessage['req'], res: IMessage['res']): req is IStrictMessage['req'] {

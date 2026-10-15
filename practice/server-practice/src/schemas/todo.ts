@@ -1,4 +1,4 @@
-import type {INewTodo} from '@/features/todos';
+import type {INewTodo, ITodo} from '@/features/todos';
 import {ObjectValidator, StringValidator} from '@/validator';
 
 export const newTodoValidator = new ObjectValidator<INewTodo>({
@@ -15,3 +15,10 @@ export const newTodoValidator = new ObjectValidator<INewTodo>({
 export const todoIdValidator = new StringValidator('ID must be a string')
     .notEmpty('ID is required')
     .uuid('ID must be a valid UUID');
+
+export const storedTodoValidator = new ObjectValidator<ITodo>({
+    id: new StringValidator().uuid(),
+    title: new StringValidator(),
+    description: new StringValidator(),
+    createdAt: new StringValidator()
+});
