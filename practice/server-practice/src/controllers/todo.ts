@@ -1,8 +1,7 @@
-import {flattenError} from 'zod';
 import {TodosService} from '@/features/todos';
 import {parseBody} from '@/helpers';
 import type {IHandler} from '@/router';
-import {deleteTodoSchema, newTodoSchema} from '@/schemas';
+import {newTodoValidator, pageValidator, todoIdValidator} from '@/schemas';
 import {getHomePage, getNewTodoPage} from '@/templates';
 import {MimeTypes} from '@/types';
 
@@ -10,7 +9,9 @@ class TodoController {
     private readonly todoService: TodosService = new TodosService();
 
     public homeTodoHandler: IHandler = async (_, res, {search}): Promise<void> => {
-        const page = Math.max(1, Number(search.get('page')) || 1);
+        const result = pageValidator.validate(Number(search.get('page')));
+        const page = result.valid ? result.data : 1;
+
         const {todos, totalPages} = await this.todoService.getTodos(page);
 
         if (!!totalPages && page > totalPages) {
@@ -27,27 +28,27 @@ class TodoController {
 
     public addTodoHandler: IHandler = async (req, res) => {
         const body = await parseBody(req);
-        const {success, data, error} = newTodoSchema.safeParse(body);
+        const result = newTodoValidator.validate(body);
 
-        if (!success) {
-            const flatError = flattenError(error).fieldErrors;
+        if (!result.valid) {
+            const {innerErrors} = result;
 
             const parsedError = {
-                title: flatError?.title?.[0] ?? '',
-                description: flatError?.description?.[0] ?? ''
+                title: innerErrors.title?.[0] ?? '',
+                description: innerErrors.description?.[0] ?? ''
             };
 
             res.writeHead(422, {'Content-Type': MimeTypes.html}).end(getNewTodoPage(body, parsedError));
             return;
         }
 
-        await this.todoService.addTodo(data);
+        await this.todoService.addTodo(result.data);
         res.writeHead(302, {Location: '/'}).end();
     };
 
     public deleteTodoHandler: IHandler = async (_, res, {params}) => {
-        const {success, data} = deleteTodoSchema.safeParse(params);
-        success && (await this.todoService.removeTodo(data));
+        const result = todoIdValidator.validate(params.id);
+        result.valid && (await this.todoService.removeTodo(result.data));
         res.writeHead(302, {Location: '/'}).end();
     };
 }
