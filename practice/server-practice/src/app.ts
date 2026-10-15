@@ -68,7 +68,7 @@ class App {
     }
 
     private isMethodAvailable(method: string): method is IMethods {
-        return method.toLowerCase() in Methods;
+        return Object.values<string>(Methods).includes(method);
     }
 
     private registerRoutes(): void {
