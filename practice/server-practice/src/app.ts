@@ -1,7 +1,8 @@
 import {existsSync, mkdirSync} from 'fs';
 import http, {Server} from 'http';
-import {BaseUrl, Port, ShutdownTimeout, StorageDir} from '@/const';
+import {BaseUrl, Port, RequestTimeout, ShutdownTimeout, StorageDir} from '@/const';
 import {TodoController, staticHandler} from '@/controllers';
+import {CustomError} from '@/errors';
 import {Router} from '@/router';
 import {getNotFoundPage, getServerErrorPage} from '@/templates';
 import {type IMessage, type IMethods, type IStrictMessage, Methods, MimeTypes} from '@/types';
@@ -17,6 +18,8 @@ class App {
     }
 
     private startServer(): void {
+        this.server.requestTimeout = RequestTimeout;
+
         this.server.on('request', (req, res) => {
             const isValidMessage = this.checkUrlAndMethodIsValid(req, res);
             if (!isValidMessage) return;
@@ -42,9 +45,20 @@ class App {
         console.log('Server started:', BaseUrl);
     }
 
-    private handleServerError(res: IMessage['res'], err: unknown): void {
-        console.error('Unhandled error in handler:', err);
-        if (!res.headersSent) res.writeHead(500, {'Content-Type': MimeTypes.html}).end(getServerErrorPage(), 'utf-8');
+    private handleServerError(res: IMessage['res'], error: unknown): void {
+        const isCustomError = error instanceof CustomError;
+        const status = isCustomError ? error.status : 500;
+        const isClientError = status < 500;
+
+        if (!isClientError) console.error('Error occurred:', error);
+        if (res.headersSent) return;
+
+        const message = isClientError && isCustomError ? error.message : 'Internal Server Error';
+
+        res.writeHead(status, {
+            Connection: 'close',
+            'Content-Type': MimeTypes.html
+        }).end(getServerErrorPage(status, message), 'utf-8');
     }
 
     private checkUrlAndMethodIsValid(req: IMessage['req'], res: IMessage['res']): req is IStrictMessage['req'] {
