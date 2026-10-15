@@ -1,4 +1,5 @@
 import type {INewTodo} from '@/features/todos';
+import {escapeHtml} from '@/helpers';
 import {getLayout} from './base';
 
 const getNewTodoPage = (values?: Partial<INewTodo>, error?: Partial<INewTodo>): string => {
@@ -20,10 +21,10 @@ const getNewTodoPage = (values?: Partial<INewTodo>, error?: Partial<INewTodo>): 
                         type="text" 
                         name="title" 
                         placeholder="Learn Node"
-                        value="${values?.title ?? ''}"
+                        value="${escapeHtml(values?.title ?? '')}"
                         required 
                     />
-                    <span class="error">${error?.title ?? ''}</span>
+                    <span class="error">${escapeHtml(error?.title ?? '')}</span>
                 </label>
                 <label class="field">
                     Description
@@ -31,8 +32,8 @@ const getNewTodoPage = (values?: Partial<INewTodo>, error?: Partial<INewTodo>): 
                         name="description" 
                         placeholder="Lear Node as soon as possible"
                         required
-                    >${values?.description ?? ''}</textarea>
-                    <span class="error">${error?.description ?? ''}</span>
+                    >${escapeHtml(values?.description ?? '')}</textarea>
+                    <span class="error">${escapeHtml(error?.description ?? '')}</span>
                 </label>
             </fieldset>
             <button type="submit" class="button button-primary">
