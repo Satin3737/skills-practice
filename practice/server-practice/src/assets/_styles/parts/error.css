@@ -1,4 +1,4 @@
-.error {
+.error-page {
     flex: 1 1 auto;
     display: flex;
     align-items: center;
@@ -8,7 +8,7 @@
     gap: 24px;
 }
 
-.error-code {
+.error-page-code {
     font-size: 240px;
     font-family: monospace;
 
