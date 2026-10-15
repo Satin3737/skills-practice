@@ -3,6 +3,7 @@ import {existsSync, writeFileSync} from 'fs';
 import {readFile, writeFile} from 'fs/promises';
 import path from 'path';
 import {StorageDir} from '@/const';
+import {DataBrokenError} from '@/errors';
 import {storedTodoValidator} from '@/schemas';
 import type {INewTodo, ITodo} from './types';
 
@@ -53,7 +54,7 @@ class TodosService {
     private parseRawTodos(rawTodos: string): ITodo[] {
         const todos: unknown = JSON.parse(rawTodos);
         if (!Array.isArray(todos) || !todos.every(todo => this.checkTodoDataValid(todo))) {
-            throw new Error(`Data broken, check ${this.pathToData}`);
+            throw new DataBrokenError(`Data broken, check ${this.pathToData}`);
         }
         return todos;
     }
