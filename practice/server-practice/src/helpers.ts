@@ -1,5 +1,6 @@
 import path from 'path';
-import {BaseUrl} from '@/const';
+import {BaseUrl, BodyLimit} from '@/const';
+import {BodyTooBigError} from '@/errors';
 import type {IMessage} from '@/types';
 
 export const parseUrl = (url: string): {url: string; search: URLSearchParams} => {
@@ -11,11 +12,20 @@ export const getExtname = (filePath: string): string => {
     return path.extname(filePath).toLowerCase();
 };
 
-export const parseBody = (req: IMessage['req']): Promise<Record<string, string>> => {
+export const parseBody = (req: IMessage['req'], bodyLimit: number = BodyLimit): Promise<Record<string, string>> => {
     return new Promise((resolve, reject) => {
-        let body = '';
-        req.on('data', chunk => (body += chunk));
-        req.on('end', () => resolve(Object.fromEntries(new URLSearchParams(body))));
+        if (Number(req.headers['content-length'] || 0) > bodyLimit) return reject(new BodyTooBigError());
+
+        const chunks: Buffer[] = [];
+        let currentSize: number = 0;
+
+        req.on('data', (chunk: Buffer) => {
+            currentSize += chunk.length;
+            if (currentSize > bodyLimit) return reject(new BodyTooBigError());
+            chunks.push(chunk);
+        });
+
+        req.on('end', () => resolve(Object.fromEntries(new URLSearchParams(Buffer.concat(chunks).toString()))));
         req.on('error', reject);
     });
 };
