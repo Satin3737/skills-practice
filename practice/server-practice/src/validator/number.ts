@@ -15,12 +15,6 @@ class NumberValidator extends BaseValidator<number> {
         });
     }
 
-    public notNaN(message?: string): this {
-        return this.addValueCheck(value => {
-            return !Number.isNaN(value) ? null : (message ?? 'Must not be NaN');
-        });
-    }
-
     public min(minValue: number, message?: string): this {
         return this.addValueCheck(value => {
             return value >= minValue ? null : (message ?? `Must be greater than or equal to ${minValue}`);
