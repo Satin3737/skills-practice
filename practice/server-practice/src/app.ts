@@ -1,6 +1,6 @@
 import {existsSync, mkdirSync} from 'fs';
 import http, {Server} from 'http';
-import {BaseUrl, Port, StorageDir} from '@/const';
+import {BaseUrl, Port, ShutdownTimeout, StorageDir} from '@/const';
 import {TodoController, staticHandler} from '@/controllers';
 import {Router} from '@/router';
 import {getNotFoundPage, getServerErrorPage} from '@/templates';
@@ -71,10 +71,31 @@ class App {
         routes.forEach(route => this.router.registerRoute(route));
     }
 
+    private shutdownServer(signal: string): void {
+        console.log(`Shutting down server due to ${signal}`);
+
+        this.server.close(error => {
+            if (error) console.error('Error occurred while shutting down server:', error);
+            console.log(`Server stopped due to ${signal}`);
+        });
+
+        setTimeout(() => {
+            console.log(`Forcefully exiting due to ${signal}, time elapsed: ${ShutdownTimeout / 1000} seconds`);
+            this.server.closeAllConnections();
+            process.exit(1);
+        }, ShutdownTimeout).unref();
+    }
+
+    private listenShutdown(): void {
+        process.once('SIGINT', signal => this.shutdownServer(signal));
+        process.once('SIGTERM', signal => this.shutdownServer(signal));
+    }
+
     private initialize(): void {
         if (!existsSync(StorageDir)) mkdirSync(StorageDir, {recursive: true});
         this.registerRoutes();
         this.startServer();
+        this.listenShutdown();
     }
 }
 
