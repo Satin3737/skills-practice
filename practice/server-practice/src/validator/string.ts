@@ -1,6 +1,8 @@
 import BaseValidator from './base';
 
 class StringValidator extends BaseValidator<string> {
+    private readonly idPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
     public constructor(typeMessage?: string) {
         super(typeMessage ?? 'Must be a string');
     }
@@ -24,6 +26,12 @@ class StringValidator extends BaseValidator<string> {
     public notEmpty(message?: string): this {
         return this.addValueCheck(value => {
             return value.trim().length ? null : (message ?? 'Cannot be empty');
+        });
+    }
+
+    public uuid(message?: string): this {
+        return this.addValueCheck(value => {
+            return this.idPattern.test(value) ? null : (message ?? 'Must be a valid UUID');
         });
     }
 }

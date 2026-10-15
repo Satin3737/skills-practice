@@ -14,4 +14,4 @@ export const newTodoValidator = new ObjectValidator<INewTodo>({
 
 export const todoIdValidator = new StringValidator('ID must be a string')
     .notEmpty('ID is required')
-    .min(1, 'ID must be at least 1 character');
+    .uuid('ID must be a valid UUID');
