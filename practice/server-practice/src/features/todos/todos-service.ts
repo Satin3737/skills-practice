@@ -9,6 +9,7 @@ import type {INewTodo, ITodo} from './types';
 class TodosService {
     private readonly pathToData: string = path.join(StorageDir, 'todos.json');
     private readonly pageSize: number = 2;
+    private mutateQueue: Promise<unknown> = Promise.resolve();
 
     public constructor() {
         this.initialize();
@@ -22,18 +23,22 @@ class TodosService {
     }
 
     public async addTodo({title, description}: INewTodo): Promise<ITodo> {
-        const todos = await this.getAllTodos();
-        const todo: ITodo = {id: crypto.randomUUID(), title, description, createdAt: new Date().toISOString()};
-        todos.push(todo);
-        await this.updateTodos(todos);
-        return todo;
+        return this.addToQueue<ITodo>(async () => {
+            const todos = await this.getAllTodos();
+            const todo: ITodo = {id: crypto.randomUUID(), title, description, createdAt: new Date().toISOString()};
+            todos.push(todo);
+            await this.updateTodos(todos);
+            return todo;
+        });
     }
 
     public async removeTodo(id: ITodo['id']): Promise<void> {
-        const todos = await this.getAllTodos();
-        const filteredTodos = todos.filter(todo => todo.id !== id);
-        if (filteredTodos.length === todos.length) return;
-        await this.updateTodos(filteredTodos);
+        return this.addToQueue<void>(async () => {
+            const todos = await this.getAllTodos();
+            const filteredTodos = todos.filter(todo => todo.id !== id);
+            if (filteredTodos.length === todos.length) return;
+            await this.updateTodos(filteredTodos);
+        });
     }
 
     private async getAllTodos(): Promise<ITodo[]> {
@@ -55,6 +60,12 @@ class TodosService {
 
     private checkTodoDataValid(todo: unknown): todo is ITodo {
         return storedTodoValidator.validate(todo).valid;
+    }
+
+    private addToQueue<T>(cb: () => Promise<T>): Promise<T> {
+        const nextMutation = this.mutateQueue.then(cb, cb);
+        this.mutateQueue = nextMutation.catch(error => console.error('Error occurred in mutate queue', error));
+        return nextMutation;
     }
 
     private initialize(): void {
