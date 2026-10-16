@@ -24,9 +24,9 @@ class App {
             const isValidMessage = this.checkUrlAndMethodIsValid(req, res);
             if (!isValidMessage) return;
 
-            const matchedRoute = this.router.resolveRoute(req);
-
             try {
+                const matchedRoute = this.router.resolveRoute(req);
+
                 if (matchedRoute) {
                     const {handler, params, search} = matchedRoute;
 
