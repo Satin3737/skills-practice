@@ -6,7 +6,11 @@ import {getHomePage, getNewTodoPage} from '@/templates';
 import {MimeTypes} from '@/types';
 
 class TodoController {
-    private readonly todoService: TodosService = new TodosService();
+    private readonly todoService: TodosService;
+
+    public constructor(todoService: TodosService = new TodosService()) {
+        this.todoService = todoService;
+    }
 
     public homeTodoHandler: IHandler = async (_, res, {search}): Promise<void> => {
         const result = pageValidator.validate(Number(search.get('page')));
