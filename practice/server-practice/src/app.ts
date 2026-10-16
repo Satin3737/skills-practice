@@ -1,7 +1,7 @@
 import {existsSync, mkdirSync} from 'fs';
 import http, {Server} from 'http';
-import {BaseUrl, Port, RequestTimeout, ShutdownTimeout, StorageDir} from '@/const';
-import {TodoController, staticHandler} from '@/controllers';
+import {AssetsDir, BaseUrl, DocsDir, Port, RequestTimeout, ShutdownTimeout, StorageDir} from '@/const';
+import {TodoController, createStaticHandler} from '@/controllers';
 import {CustomError} from '@/errors';
 import {Router} from '@/router';
 import {getNotFoundPage, getServerErrorPage} from '@/templates';
@@ -41,8 +41,7 @@ class App {
             }
         });
 
-        this.server.listen(Port);
-        console.log('Server started:', BaseUrl);
+        this.server.listen(Port, () => console.log('Server started:', BaseUrl));
     }
 
     private handleServerError(res: IMessage['res'], error: unknown): void {
@@ -79,7 +78,8 @@ class App {
             {path: '/todos', method: Methods.get, handler: todoController.newTodoHandler},
             {path: '/todos', method: Methods.post, handler: todoController.addTodoHandler},
             {path: '/todos/:id/delete', method: Methods.post, handler: todoController.deleteTodoHandler},
-            {path: '/assets/*', method: Methods.get, handler: staticHandler}
+            {path: '/assets/*', method: Methods.get, handler: createStaticHandler(AssetsDir)},
+            {path: '/docs/*', method: Methods.get, handler: createStaticHandler(DocsDir)}
         ];
 
         routes.forEach(route => this.router.registerRoute(route));

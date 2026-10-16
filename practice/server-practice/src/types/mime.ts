@@ -9,7 +9,8 @@ export const MimeTypes = {
     jpg: 'image/jpg',
     jpeg: 'image/jpeg',
     svg: 'image/svg+xml',
-    ico: 'image/x-icon'
+    ico: 'image/x-icon',
+    txt: 'text/plain'
 } as const;
 
 export const MimeTypesExt = Object.fromEntries<IMimeTypes>(

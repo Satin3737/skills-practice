@@ -1,7 +1,9 @@
 import path from 'path';
 
 export const SrcDir = import.meta.dirname;
-export const AssetsDir = path.join(SrcDir, 'assets');
+export const PublicDir = path.join(SrcDir, 'public');
+export const AssetsDir = path.join(PublicDir, 'assets');
+export const DocsDir = path.join(PublicDir, 'docs');
 export const StorageDir = path.join(SrcDir, '../storage');
 
 export const Port = 8080;
