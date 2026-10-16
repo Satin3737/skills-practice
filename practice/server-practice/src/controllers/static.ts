@@ -1,29 +1,27 @@
 import {readFile} from 'fs/promises';
 import path from 'path';
-import {AssetsDir} from '@/const';
-import {getExtname, parseUrl} from '@/helpers';
+import {getExtname} from '@/helpers';
 import type {IHandler} from '@/router';
 import {MimeTypesExt} from '@/types';
 
-export const staticHandler: IHandler = async (req, res): Promise<void> => {
-    const parsed = parseUrl(req.url);
-    const relativePath = parsed.url.split('/assets/')[1];
-    const filePath = path.join(AssetsDir, relativePath);
+export const createStaticHandler = (dir: string): IHandler => {
+    return async (_, res, {params}): Promise<void> => {
+        const filePath = path.join(dir, params['*'] ?? '');
 
-    if (!filePath.startsWith(AssetsDir)) {
-        res.writeHead(403).end('Forbidden');
-        return;
-    }
+        if (!filePath.startsWith(dir + path.sep)) {
+            res.writeHead(403).end('Forbidden');
+            return;
+        }
 
-    try {
-        const file = await readFile(filePath, 'utf8');
-        const ext = getExtname(filePath);
-        const contentType = MimeTypesExt[ext] ?? 'application/octet-stream';
-        res.writeHead(200, {'Content-Type': contentType}).end(file);
-    } catch (e) {
-        console.error(e);
-        res.writeHead(404).end('Not found');
-    }
+        try {
+            const file = await readFile(filePath);
+            const ext = getExtname(filePath);
+            const fileContentType = MimeTypesExt[ext] ?? 'application/octet-stream';
+            res.writeHead(200, {'Content-Type': fileContentType}).end(file);
+        } catch {
+            res.writeHead(404).end('Not found');
+        }
+    };
 };
 
-export default staticHandler;
+export default createStaticHandler;

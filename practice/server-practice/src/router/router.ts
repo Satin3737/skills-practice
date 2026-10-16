@@ -29,7 +29,10 @@ class Router {
                     .slice(0, indexOfAnyTrigger)
                     .every((seg, i) => seg === requestSegments[i]);
 
-                if (isPrefixSame) return {handler: route.handler, params, search};
+                if (isPrefixSame) {
+                    params[this.anyTrigger] = requestSegments.slice(indexOfAnyTrigger).join('/');
+                    return {handler: route.handler, params, search};
+                }
 
                 continue;
             }
