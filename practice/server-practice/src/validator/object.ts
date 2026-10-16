@@ -5,7 +5,7 @@ class ObjectValidator<T extends object> extends BaseValidator<T> {
     private readonly shape: IObjectShape<T>;
 
     public constructor(shape: IObjectShape<T>, typeMessage?: string) {
-        super(typeMessage ?? 'Must be an object');
+        super(typeMessage || 'Must be an object');
         this.shape = shape;
     }
 
@@ -28,10 +28,16 @@ class ObjectValidator<T extends object> extends BaseValidator<T> {
         }
 
         if (Object.keys(innerErrors).length || !this.isShapeFilled(data)) {
-            return {valid: false, errors: [], innerErrors};
+            return {valid: false, errors: this.flattenInnerErrors(innerErrors), innerErrors};
         }
 
         return {valid: true, data};
+    }
+
+    private flattenInnerErrors(innerErrors: IShapeInnerErrors<T>): string[] {
+        return Object.entries<string[] | undefined>(innerErrors).flatMap(([key, errors = []]) => {
+            return errors.map(error => `${key}: ${error}`);
+        });
     }
 
     private isShapeFilled(data: Partial<T>): data is T {

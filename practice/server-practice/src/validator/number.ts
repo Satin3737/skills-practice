@@ -2,7 +2,7 @@ import BaseValidator from './base';
 
 class NumberValidator extends BaseValidator<number> {
     public constructor(typeMessage?: string) {
-        super(typeMessage ?? 'Must be a number');
+        super(typeMessage || 'Must be a number');
     }
 
     protected valueTypeGuard(value: unknown): value is number {

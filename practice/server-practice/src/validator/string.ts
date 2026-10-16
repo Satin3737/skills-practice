@@ -4,7 +4,7 @@ class StringValidator extends BaseValidator<string> {
     private readonly idPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
     public constructor(typeMessage?: string) {
-        super(typeMessage ?? 'Must be a string');
+        super(typeMessage || 'Must be a string');
     }
 
     protected valueTypeGuard(value: unknown): value is string {
