@@ -1,9 +1,9 @@
 import crypto from 'crypto';
 import {existsSync, writeFileSync} from 'fs';
-import {readFile, writeFile} from 'fs/promises';
+import {readFile, rename, unlink, writeFile} from 'fs/promises';
 import path from 'path';
 import {StorageDir} from '@/const';
-import {DataBrokenError} from '@/errors';
+import {DataBrokenError, FileOperationError} from '@/errors';
 import {storedTodoValidator} from '@/schemas';
 import type {INewTodo, ITodo} from './types';
 
@@ -48,7 +48,15 @@ class TodosService {
     }
 
     private async updateTodos(todos: ITodo[]): Promise<void> {
-        await writeFile(this.pathToData, JSON.stringify(todos, null, 4));
+        const tempFilePath = `${this.pathToData}.tmp`;
+
+        try {
+            await writeFile(tempFilePath, JSON.stringify(todos, null, 4));
+            await rename(tempFilePath, this.pathToData);
+        } catch (cause) {
+            await unlink(tempFilePath).catch(() => {});
+            throw new FileOperationError(`Failed to update todos`, cause);
+        }
     }
 
     private parseRawTodos(rawTodos: string): ITodo[] {

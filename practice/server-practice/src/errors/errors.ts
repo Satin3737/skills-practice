@@ -1,27 +1,36 @@
 export class CustomError extends Error {
     public status: number = 500;
+
+    public constructor(message?: string, cause?: unknown) {
+        super(message, cause !== undefined ? {cause} : undefined);
+    }
 }
 
 export class BodyTooBigError extends CustomError {
-    public constructor(message?: string) {
-        super(message ?? 'Request body is too big');
+    public constructor(message?: string, cause?: unknown) {
+        super(message ?? 'Request body is too big', cause);
         this.name = 'BodyTooBigError';
         this.status = 413;
     }
 }
 
 export class UnhandledError extends CustomError {
-    public constructor(message?: string) {
-        super(message ?? 'An unhandled error occurred');
+    public constructor(message?: string, cause?: unknown) {
+        super(message ?? 'An unhandled error occurred', cause);
         this.name = 'UnhandledError';
-        this.status = 500;
     }
 }
 
 export class DataBrokenError extends CustomError {
-    public constructor(message?: string) {
-        super(message ?? 'Data is broken');
+    public constructor(message?: string, cause?: unknown) {
+        super(message ?? 'Data is broken', cause);
         this.name = 'DataBrokenError';
-        this.status = 500;
+    }
+}
+
+export class FileOperationError extends CustomError {
+    public constructor(message?: string, cause?: unknown) {
+        super(message ?? 'File operation failed', cause);
+        this.name = 'FileOperationError';
     }
 }
