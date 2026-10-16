@@ -3,16 +3,15 @@ import {cpSync, rmSync} from 'fs';
 import path from 'path';
 
 rmSync('dist', {recursive: true, force: true});
+cpSync('src/public', 'dist/public', {recursive: true});
 
 await esbuild
     .build({
-        entryPoints: ['src/assets/_styles/index.css'],
+        entryPoints: ['src/styles/index.css'],
         bundle: true,
-        outdir: 'dist/assets/styles',
+        outdir: 'dist/public/assets/styles',
         alias: {
             '@reusable': path.resolve(import.meta.dirname, '../../../reusable')
         }
     })
     .catch(() => process.exit(1));
-
-cpSync('src/assets/favicon', 'dist/assets/favicon', {recursive: true});

@@ -3,16 +3,16 @@ import esbuild from 'esbuild';
 import path from 'path';
 
 const ctx = await esbuild.context({
-    entryPoints: ['src/assets/_styles/index.css'],
+    entryPoints: ['src/styles/index.css'],
     bundle: true,
-    outdir: 'src/assets/styles',
+    outdir: 'src/public/assets/styles',
     alias: {
         '@reusable': path.resolve(import.meta.dirname, '../../../reusable')
     }
 });
 
 await ctx.watch();
-console.log('[esbuild] watching CSS → src/assets/styles');
+console.log('[esbuild] watching CSS → src/public/assets/styles');
 
 const server = spawn('tsx', ['watch', 'src/app.ts'], {stdio: 'inherit'});
 
