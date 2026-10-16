@@ -19,43 +19,39 @@ class Router {
 
         for (const route of this.routes) {
             if (route.method !== method) continue;
-
-            const params: IParams = {};
-
-            const indexOfAnyTrigger = route.segments.indexOf(this.anyTrigger);
-
-            if (indexOfAnyTrigger !== -1) {
-                const isPrefixSame = route.segments
-                    .slice(0, indexOfAnyTrigger)
-                    .every((seg, i) => seg === requestSegments[i]);
-
-                if (isPrefixSame) {
-                    params[this.anyTrigger] = requestSegments.slice(indexOfAnyTrigger).join('/');
-                    return {handler: route.handler, params, search};
-                }
-
-                continue;
-            }
-
-            if (route.segments.length !== requestSegments.length) continue;
-
-            const isRouteMatched = route.segments.every((seg, index) => {
-                const requestSegment = requestSegments[index];
-                const isParam = seg.startsWith(this.paramTrigger);
-
-                if (isParam) {
-                    const paramName = seg.replace(this.paramTrigger, '');
-                    params[paramName] = requestSegment;
-                    return true;
-                } else {
-                    return seg === requestSegment;
-                }
-            });
-
-            if (isRouteMatched) return {handler: route.handler, params, search};
+            const params = this.matchSegments(route.segments, requestSegments);
+            if (params) return {handler: route.handler, params, search};
         }
 
         return null;
+    }
+
+    private matchSegments(routeSegments: string[], requestSegments: string[]): IParams | null {
+        const indexOfAnyTrigger = routeSegments.indexOf(this.anyTrigger);
+        const hasAnyTrigger = indexOfAnyTrigger !== -1;
+        const fixedSegments = hasAnyTrigger ? routeSegments.slice(0, indexOfAnyTrigger) : routeSegments;
+
+        const isLengthMatched = hasAnyTrigger
+            ? requestSegments.length >= fixedSegments.length
+            : requestSegments.length === fixedSegments.length;
+
+        if (!isLengthMatched) return null;
+
+        const params: IParams = {};
+
+        for (const [index, segment] of fixedSegments.entries()) {
+            const requestSegment = requestSegments[index];
+
+            if (segment.startsWith(this.paramTrigger)) {
+                params[segment.slice(this.paramTrigger.length)] = requestSegment;
+            } else if (segment !== requestSegment) {
+                return null;
+            }
+        }
+
+        if (hasAnyTrigger) params[this.anyTrigger] = requestSegments.slice(indexOfAnyTrigger).join('/');
+
+        return params;
     }
 
     private parseToSegments(path: string): string[] {
