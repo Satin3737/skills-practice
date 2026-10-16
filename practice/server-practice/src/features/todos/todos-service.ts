@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import {existsSync, writeFileSync} from 'fs';
+import {existsSync, mkdirSync, writeFileSync} from 'fs';
 import {readFile, rename, unlink, writeFile} from 'fs/promises';
 import path from 'path';
 import {StorageDir} from '@/const';
@@ -8,11 +8,12 @@ import {storedTodoValidator} from '@/schemas';
 import type {INewTodo, ITodo} from './types';
 
 class TodosService {
-    private readonly pathToData: string = path.join(StorageDir, 'todos.json');
+    private readonly pathToData: string;
     private readonly pageSize: number = 2;
     private mutateQueue: Promise<unknown> = Promise.resolve();
 
-    public constructor() {
+    public constructor(pathToData: string = path.join(StorageDir, 'todos.json')) {
+        this.pathToData = pathToData;
         this.initialize();
     }
 
@@ -60,10 +61,18 @@ class TodosService {
     }
 
     private parseRawTodos(rawTodos: string): ITodo[] {
-        const todos: unknown = JSON.parse(rawTodos);
+        let todos: unknown;
+
+        try {
+            todos = JSON.parse(rawTodos);
+        } catch (cause) {
+            throw new DataBrokenError(`Data broken, check ${this.pathToData}`, cause);
+        }
+
         if (!Array.isArray(todos) || !todos.every(todo => this.checkTodoDataValid(todo))) {
             throw new DataBrokenError(`Data broken, check ${this.pathToData}`);
         }
+
         return todos;
     }
 
@@ -78,6 +87,8 @@ class TodosService {
     }
 
     private initialize(): void {
+        mkdirSync(path.dirname(this.pathToData), {recursive: true});
+
         if (!existsSync(this.pathToData)) {
             writeFileSync(this.pathToData, JSON.stringify([]));
         }
