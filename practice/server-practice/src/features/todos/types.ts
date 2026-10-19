@@ -6,3 +6,5 @@ export interface ITodo {
 }
 
 export type INewTodo = Pick<ITodo, 'title' | 'description'>;
+
+export type ITodoTransform = (todos: AsyncIterable<ITodo>) => AsyncIterable<ITodo>;

@@ -1,79 +1,113 @@
 import crypto from 'crypto';
-import {existsSync, mkdirSync, writeFileSync} from 'fs';
-import {readFile, rename, unlink, writeFile} from 'fs/promises';
+import {createReadStream, createWriteStream, existsSync, mkdirSync, writeFileSync} from 'fs';
+import {rename, unlink} from 'fs/promises';
 import path from 'path';
+import {createInterface} from 'readline/promises';
+import {pipeline} from 'stream/promises';
 import {StorageDir} from '@/const';
 import {DataBrokenError, FileOperationError} from '@/errors';
 import {storedTodoValidator} from '@/schemas';
-import type {INewTodo, ITodo} from './types';
+import type {INewTodo, ITodo, ITodoTransform} from './types';
 
 class TodosService {
     private readonly pathToData: string;
     private readonly pageSize: number = 2;
     private mutateQueue: Promise<unknown> = Promise.resolve();
 
-    public constructor(pathToData: string = path.join(StorageDir, 'todos.json')) {
+    public constructor(pathToData: string = path.join(StorageDir, 'todos.jsonl')) {
         this.pathToData = pathToData;
         this.initialize();
     }
 
     public async getTodos(page: number): Promise<{todos: ITodo[]; totalPages: number}> {
-        const allTodos = (await this.getAllTodos()).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-        const totalPages = Math.ceil(allTodos.length / this.pageSize);
-        const todos = allTodos.slice((page - 1) * this.pageSize, page * this.pageSize);
-        return {todos, totalPages};
+        const limit = page * this.pageSize;
+        const newestTodos: ITodo[] = [];
+        let total: number = 0;
+
+        for await (const todo of this.readTodos()) {
+            total++;
+            const position = this.getTodoPosition(newestTodos, todo);
+            if (position >= limit) continue;
+            newestTodos.splice(position, 0, todo);
+            if (newestTodos.length > limit) newestTodos.pop();
+        }
+
+        const todos = newestTodos.slice((page - 1) * this.pageSize);
+        return {todos, totalPages: Math.ceil(total / this.pageSize)};
     }
 
     public async addTodo({title, description}: INewTodo): Promise<ITodo> {
         return this.addToQueue<ITodo>(async () => {
-            const todos = await this.getAllTodos();
             const todo: ITodo = {id: crypto.randomUUID(), title, description, createdAt: new Date().toISOString()};
-            todos.push(todo);
-            await this.updateTodos(todos);
+
+            await this.rewriteTodos(async function* (todos: AsyncIterable<ITodo>) {
+                yield* todos;
+                yield todo;
+            });
+
             return todo;
         });
     }
 
     public async removeTodo(id: ITodo['id']): Promise<void> {
         return this.addToQueue<void>(async () => {
-            const todos = await this.getAllTodos();
-            const filteredTodos = todos.filter(todo => todo.id !== id);
-            if (filteredTodos.length === todos.length) return;
-            await this.updateTodos(filteredTodos);
+            if (!(await this.todoExists(id))) return;
+
+            await this.rewriteTodos(async function* (todos: AsyncIterable<ITodo>) {
+                for await (const todo of todos) {
+                    if (todo.id !== id) yield todo;
+                }
+            });
         });
     }
 
-    private async getAllTodos(): Promise<ITodo[]> {
-        const rawTodos = await readFile(this.pathToData, 'utf8');
-        return this.parseRawTodos(rawTodos);
+    private async todoExists(id: ITodo['id']): Promise<boolean> {
+        for await (const todo of this.readTodos()) if (todo.id === id) return true;
+        return false;
     }
 
-    private async updateTodos(todos: ITodo[]): Promise<void> {
+    private async rewriteTodos(transform: ITodoTransform): Promise<void> {
         const tempFilePath = `${this.pathToData}.tmp`;
 
         try {
-            await writeFile(tempFilePath, JSON.stringify(todos, null, 4));
+            await pipeline(
+                transform(this.readTodos()),
+                async function* (todos: AsyncIterable<ITodo>) {
+                    for await (const todo of todos) yield `${JSON.stringify(todo)}\n`;
+                },
+                createWriteStream(tempFilePath)
+            );
             await rename(tempFilePath, this.pathToData);
         } catch (cause) {
             await unlink(tempFilePath).catch(() => {});
+            if (cause instanceof DataBrokenError) throw cause;
             throw new FileOperationError(`Failed to update todos`, cause);
         }
     }
 
-    private parseRawTodos(rawTodos: string): ITodo[] {
-        let todos: unknown;
+    private async *readTodos(): AsyncGenerator<ITodo> {
+        const lines = createInterface({input: createReadStream(this.pathToData, {encoding: 'utf8'})});
+        for await (const line of lines) if (line.trim()) yield this.parseTodo(line);
+    }
+
+    private getTodoPosition(todos: ITodo[], todoForCheck: ITodo): number {
+        const createdAt = Date.parse(todoForCheck.createdAt);
+        const index = todos.findIndex(todo => Date.parse(todo.createdAt) < createdAt);
+        return index === -1 ? todos.length : index;
+    }
+
+    private parseTodo(todoLine: string): ITodo {
+        let todo: unknown;
 
         try {
-            todos = JSON.parse(rawTodos);
+            todo = JSON.parse(todoLine);
         } catch (cause) {
             throw new DataBrokenError(`Data broken, check ${this.pathToData}`, cause);
         }
 
-        if (!Array.isArray(todos) || !todos.every(todo => this.checkTodoDataValid(todo))) {
-            throw new DataBrokenError(`Data broken, check ${this.pathToData}`);
-        }
+        if (!this.checkTodoDataValid(todo)) throw new DataBrokenError(`Data broken, check ${this.pathToData}`);
 
-        return todos;
+        return todo;
     }
 
     private checkTodoDataValid(todo: unknown): todo is ITodo {
@@ -88,10 +122,7 @@ class TodosService {
 
     private initialize(): void {
         mkdirSync(path.dirname(this.pathToData), {recursive: true});
-
-        if (!existsSync(this.pathToData)) {
-            writeFileSync(this.pathToData, JSON.stringify([]));
-        }
+        if (!existsSync(this.pathToData)) writeFileSync(this.pathToData, '');
     }
 }
 
