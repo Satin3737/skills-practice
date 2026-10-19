@@ -58,11 +58,15 @@ describe('AppServer (HTTP)', () => {
         });
     };
 
-    const readStored = async (): Promise<ITodo[]> => JSON.parse(await readFile(file, 'utf8'));
+    const readStored = async (): Promise<ITodo[]> =>
+        (await readFile(file, 'utf8'))
+            .split('\n')
+            .filter(Boolean)
+            .map(line => JSON.parse(line));
 
     before(async () => {
         dir = await mkdtemp(path.join(tmpdir(), 'app-'));
-        file = path.join(dir, 'todos.json');
+        file = path.join(dir, 'todos.jsonl');
         app = new AppServer(new TodoController(new TodosService(file)));
         port = await app.start(0);
     });
@@ -73,7 +77,7 @@ describe('AppServer (HTTP)', () => {
     });
 
     beforeEach(async () => {
-        await writeFile(file, '[]');
+        await writeFile(file, '');
     });
 
     describe('pages', () => {
@@ -208,7 +212,7 @@ describe('AppServer (HTTP)', () => {
     describe('errors', () => {
         it('broken storage → 500 with a generic message and no internal paths', async t => {
             t.mock.method(console, 'error', () => {});
-            await writeFile(file, '{"not": "an array"}');
+            await writeFile(file, '{"not": "a todo"}\n');
 
             const res = await send();
             assert.equal(res.status, 500);

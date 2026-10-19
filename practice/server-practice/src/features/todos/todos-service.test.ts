@@ -8,6 +8,8 @@ import {type ITodo, TodosService} from '@/features/todos';
 
 const newTodo = (n: number) => ({title: `Todo title ${n}`, description: `Description ${n}`});
 
+const toJsonl = (todos: unknown[]): string => todos.map(todo => `${JSON.stringify(todo)}\n`).join('');
+
 const storedTodo = (n: number, createdAt: string): ITodo => ({
     id: crypto.randomUUID(),
     title: `Stored ${n}`,
@@ -19,11 +21,15 @@ describe('TodosService', () => {
     let dir: string;
     let file: string;
 
-    const readStored = async (): Promise<ITodo[]> => JSON.parse(await readFile(file, 'utf8'));
+    const readStored = async (): Promise<ITodo[]> =>
+        (await readFile(file, 'utf8'))
+            .split('\n')
+            .filter(Boolean)
+            .map(line => JSON.parse(line));
 
     beforeEach(async () => {
         dir = await mkdtemp(path.join(tmpdir(), 'todos-service-'));
-        file = path.join(dir, 'todos.json');
+        file = path.join(dir, 'todos.jsonl');
     });
 
     afterEach(async () => {
@@ -38,14 +44,14 @@ describe('TodosService', () => {
         });
 
         it('creates missing parent directories', async () => {
-            const nested = path.join(dir, 'a', 'b', 'todos.json');
+            const nested = path.join(dir, 'a', 'b', 'todos.jsonl');
             new TodosService(nested);
-            assert.equal(await readFile(nested, 'utf8'), '[]');
+            assert.equal(await readFile(nested, 'utf8'), '');
         });
 
         it('keeps existing data', async () => {
             const existing = [storedTodo(1, '2026-01-01T00:00:00.000Z')];
-            await writeFile(file, JSON.stringify(existing));
+            await writeFile(file, toJsonl(existing));
             new TodosService(file);
             assert.deepEqual(await readStored(), existing);
         });
@@ -91,7 +97,7 @@ describe('TodosService', () => {
         });
 
         it('does not rewrite the file when the id is unknown', async () => {
-            const original = JSON.stringify([storedTodo(1, '2026-01-01T00:00:00.000Z')]);
+            const original = toJsonl([storedTodo(1, '2026-01-01T00:00:00.000Z')]);
             await writeFile(file, original);
             const service = new TodosService(file);
 
@@ -131,7 +137,7 @@ describe('TodosService', () => {
             const old = storedTodo(1, '2026-01-01T00:00:00.000Z');
             const newest = storedTodo(2, '2026-03-01T00:00:00.000Z');
             const middle = storedTodo(3, '2026-02-01T00:00:00.000Z');
-            await writeFile(file, JSON.stringify([old, newest, middle]));
+            await writeFile(file, toJsonl([old, newest, middle]));
 
             const {todos} = await new TodosService(file).getTodos(1);
             assert.deepEqual(todos, [newest, middle]);
@@ -139,7 +145,7 @@ describe('TodosService', () => {
 
         it('paginates by two and counts pages', async () => {
             const stored = Array.from({length: 5}, (_, i) => storedTodo(i, `2026-01-0${i + 1}T00:00:00.000Z`));
-            await writeFile(file, JSON.stringify(stored));
+            await writeFile(file, toJsonl(stored));
             const service = new TodosService(file);
 
             const page1 = await service.getTodos(1);
@@ -153,6 +159,26 @@ describe('TodosService', () => {
                 page3.todos.map(todo => todo.title),
                 ['Stored 0']
             );
+        });
+
+        it('ignores blank lines and a missing trailing newline', async () => {
+            const first = storedTodo(1, '2026-01-01T00:00:00.000Z');
+            const second = storedTodo(2, '2026-02-01T00:00:00.000Z');
+            await writeFile(file, `\n${JSON.stringify(first)}\n   \n${JSON.stringify(second)}`);
+
+            assert.deepEqual(await new TodosService(file).getTodos(1), {todos: [second, first], totalPages: 1});
+        });
+
+        it('reads a file larger than one stream chunk', async () => {
+            const stored = Array.from({length: 2000}, (_, i) =>
+                storedTodo(i, new Date(Date.UTC(2026, 0, 1) + i * 1000).toISOString())
+            );
+            await writeFile(file, toJsonl(stored));
+            const service = new TodosService(file);
+
+            const {todos, totalPages} = await service.getTodos(500);
+            assert.equal(totalPages, 1000);
+            assert.deepEqual(todos, [stored[1001], stored[1000]]);
         });
 
         it('returns an empty page past the end', async () => {
@@ -191,8 +217,14 @@ describe('TodosService', () => {
             assert.equal(await readFile(file, 'utf8'), '[{"id":');
         });
 
-        it('throws DataBrokenError when the root is not an array', async () => {
-            for (const content of ['{}', 'null', '"todos"', '42', '', '   ']) {
+        it('points to the storage file in the error message', async () => {
+            const valid = storedTodo(1, '2026-01-01T00:00:00.000Z');
+            await writeFile(file, `${toJsonl([valid, valid])}oops\n`);
+            await assert.rejects(new TodosService(file).getTodos(1), {message: `Data broken, check ${file}`});
+        });
+
+        it('throws DataBrokenError when a line is not a todo object', async () => {
+            for (const content of ['{}', 'null', '"todos"', '42', '[]']) {
                 await writeFile(file, content);
                 await assert.rejects(new TodosService(file).getTodos(1), DataBrokenError, content);
             }
@@ -200,7 +232,7 @@ describe('TodosService', () => {
 
         it('throws DataBrokenError when one of the todos has a wrong shape', async () => {
             const valid = storedTodo(1, '2026-01-01T00:00:00.000Z');
-            await writeFile(file, JSON.stringify([valid, {...valid, id: 'not-a-uuid'}]));
+            await writeFile(file, toJsonl([valid, {...valid, id: 'not-a-uuid'}]));
             await assert.rejects(new TodosService(file).getTodos(1), DataBrokenError);
         });
 
@@ -210,7 +242,7 @@ describe('TodosService', () => {
             const service = new TodosService(file);
 
             await assert.rejects(service.addTodo(newTodo(1)));
-            await writeFile(file, '[]');
+            await writeFile(file, '');
             await service.addTodo(newTodo(2));
             assert.equal((await readStored()).length, 1);
         });
@@ -221,7 +253,7 @@ describe('TodosService', () => {
             const service = new TodosService(file);
             const todo = await service.addTodo(newTodo(1));
             await service.removeTodo(todo.id);
-            assert.deepEqual(await readdir(dir), ['todos.json']);
+            assert.deepEqual(await readdir(dir), ['todos.jsonl']);
         });
 
         it('replaces a stale temporary file left by a crash', async () => {
@@ -230,7 +262,7 @@ describe('TodosService', () => {
 
             await service.addTodo(newTodo(1));
             assert.equal((await readStored()).length, 1);
-            assert.deepEqual(await readdir(dir), ['todos.json']);
+            assert.deepEqual(await readdir(dir), ['todos.jsonl']);
         });
 
         it(
@@ -247,7 +279,7 @@ describe('TodosService', () => {
                     return true;
                 });
                 assert.deepEqual(await readStored(), []);
-                assert.deepEqual(await readdir(dir), ['todos.json']);
+                assert.deepEqual(await readdir(dir), ['todos.jsonl']);
             }
         );
     });
