@@ -201,7 +201,7 @@ describe('AppServer (HTTP)', () => {
         it('serves several static roots', async () => {
             const res = await send({path: '/docs/test.txt'});
             assert.equal(res.status, 200);
-            assert.match(String(res.headers['content-type']), /^text\/plain/);
+            assert.equal(res.headers['content-type'], 'text/plain; charset=utf-8');
         });
 
         it('serves a file with spaces and Cyrillic in its name', async () => {
