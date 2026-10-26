@@ -7,7 +7,8 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "test": "vitest run"
     },
     "author": "satin",
     "license": "ISC",
@@ -16,6 +17,8 @@
         "lucide": "^1.48.0"
     },
     "devDependencies": {
-        "vite": "^8.3.1"
+        "happy-dom": "^21.0.4",
+        "vite": "^8.3.1",
+        "vitest": "^5.0.2"
     }
 }

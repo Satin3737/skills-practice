@@ -1,5 +1,5 @@
 import path from 'path';
-import {defineConfig} from 'vite';
+import {defineConfig} from 'vitest/config';
 
 export default defineConfig({
     resolve: {
@@ -7,6 +7,9 @@ export default defineConfig({
         alias: {
             '@reusable': path.resolve(import.meta.dirname, '../../reusable')
         }
+    },
+    test: {
+        environment: 'happy-dom'
     },
     server: {
         forwardConsole: true,
