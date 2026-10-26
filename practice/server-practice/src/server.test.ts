@@ -100,6 +100,21 @@ describe('AppServer (HTTP)', () => {
             assert.ok(res.body.includes('404'));
         });
 
+        it('malformed or host-like request targets → 404', async () => {
+            for (const target of [
+                '//[',
+                '//x/assets/favicon/favicon.svg',
+                '///assets/favicon/favicon.svg',
+                '/\\x/assets/favicon/favicon.svg',
+                '/%',
+                '/%zz',
+                '/todos/%/delete',
+                'http://[/'
+            ]) {
+                assert.equal((await send({path: target})).status, 404, target);
+            }
+        });
+
         it('unsupported method → 405', async () => {
             assert.equal((await send({method: 'PUT'})).status, 405);
         });
@@ -149,7 +164,8 @@ describe('AppServer (HTTP)', () => {
         });
 
         it('body over the limit → 413 and the connection is closed', async () => {
-            const res = await send(form({title: 'x'.repeat(BodyLimit + 1), description: 'Long enough description'}));
+            const {headers, ...request} = form({title: 'x', description: 'Long enough description'});
+            const res = await send({...request, headers: {...headers, 'Content-Length': BodyLimit + 1}});
             assert.equal(res.status, 413);
             assert.equal(res.headers.connection, 'close');
             assert.deepEqual(await readStored(), []);
@@ -188,6 +204,23 @@ describe('AppServer (HTTP)', () => {
             assert.match(String(res.headers['content-type']), /^text\/plain/);
         });
 
+        it('serves a file with spaces and Cyrillic in its name', async () => {
+            const res = await send({path: encodeURI('/docs/с пробелом.txt')});
+            assert.equal(res.status, 200);
+            assert.equal(res.body, 'туц-туц-туц\n');
+        });
+
+        it('serves a file from a Cyrillic directory with spaces', async () => {
+            const res = await send({path: encodeURI('/docs/папка А Б В/вложенный с пробелом.txt')});
+            assert.equal(res.status, 200);
+        });
+
+        it('malformed percent-encoding in a static path → 404', async () => {
+            for (const target of ['/assets/%', '/assets/%E0%A4%A', '/assets/%00']) {
+                assert.equal((await send({path: target})).status, 404, target);
+            }
+        });
+
         it('missing file → 404', async () => {
             assert.equal((await send({path: '/assets/missing.css'})).status, 404);
         });
@@ -197,13 +230,16 @@ describe('AppServer (HTTP)', () => {
         });
 
         it('does not leak files outside the static root', async () => {
-            for (const traversal of [
-                '/assets/../../const.ts',
-                '/assets/..%2F..%2Fconst.ts',
-                '/assets/%2e%2e/%2e%2e/const.ts'
-            ]) {
+            const expected: Record<string, number> = {
+                '/assets/../../const.ts': 404,
+                '/assets/%2e%2e/%2e%2e/const.ts': 404,
+                '/assets/..%2F..%2Fconst.ts': 403,
+                '/assets/%2e%2e%2fconst.ts': 403
+            };
+
+            for (const [traversal, status] of Object.entries(expected)) {
                 const res = await send({path: traversal});
-                assert.equal(res.status, 404, traversal);
+                assert.equal(res.status, status, traversal);
                 assert.ok(!res.body.includes('export const'), traversal);
             }
         });
