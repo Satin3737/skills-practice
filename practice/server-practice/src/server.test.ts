@@ -100,8 +100,8 @@ describe('AppServer (HTTP)', () => {
             assert.ok(res.body.includes('404'));
         });
 
-        it('unsupported method → 400', async () => {
-            assert.equal((await send({method: 'PUT'})).status, 400);
+        it('unsupported method → 405', async () => {
+            assert.equal((await send({method: 'PUT'})).status, 405);
         });
 
         it('any page of an empty list renders without a redirect', async () => {
