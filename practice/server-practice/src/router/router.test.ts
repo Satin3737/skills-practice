@@ -208,3 +208,12 @@ describe('Router: wildcard', () => {
         assert.equal(router.resolveRoute(request('GET', '/todos'))?.handler, todos);
     });
 });
+
+describe('Router: malformed targets', () => {
+    it('returns null instead of throwing', () => {
+        const router = createRouter(['GET', '/', createHandler()], ['GET', '/assets/*', createHandler()]);
+        for (const url of ['//[', '//x/assets/a.svg', '/\\x/assets/a.svg', '/%', 'http://[/']) {
+            assert.equal(router.resolveRoute(request('GET', url)), null, url);
+        }
+    });
+});

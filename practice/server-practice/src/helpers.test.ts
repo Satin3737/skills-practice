@@ -34,23 +34,29 @@ describe('escapeHtml', () => {
 
 describe('parseUrl', () => {
     it('splits pathname and search params', () => {
-        const {url, search} = parseUrl('/todos?page=2');
+        const {url, search} = parseUrl('/todos?page=2')!;
         assert.equal(url, '/todos');
         assert.equal(search.get('page'), '2');
     });
 
     it('normalizes dot segments', () => {
-        assert.equal(parseUrl('/assets/../const.ts').url, '/const.ts');
-        assert.equal(parseUrl('/assets/%2e%2e/const.ts').url, '/const.ts');
+        assert.equal(parseUrl('/assets/../const.ts')?.url, '/const.ts');
+        assert.equal(parseUrl('/assets/%2e%2e/const.ts')?.url, '/const.ts');
     });
 
     it('keeps the path percent-encoded and encodes non-ASCII', () => {
-        assert.equal(parseUrl('/a%20b').url, '/a%20b');
-        assert.equal(parseUrl('/я').url, '/%D1%8F');
+        assert.equal(parseUrl('/a%20b')?.url, '/a%20b');
+        assert.equal(parseUrl('/я')?.url, '/%D1%8F');
+    });
+
+    it('returns null for host-like or malformed targets', () => {
+        for (const target of ['//[', '//x/a', '///a', '/\\x/a', '\\\\x/a', 'http://[/']) {
+            assert.equal(parseUrl(target), null, target);
+        }
     });
 
     it('takes only the path from an absolute-form request target', () => {
-        assert.equal(parseUrl('http://evil.example/todos?x=1').url, '/todos');
+        assert.equal(parseUrl('http://evil.example/todos?x=1')?.url, '/todos');
     });
 });
 

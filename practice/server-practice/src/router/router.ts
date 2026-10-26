@@ -14,7 +14,10 @@ class Router {
     }
 
     public resolveRoute({url, method}: IStrictMessage['req']): IRouteResolve | null {
-        const {url: parsedUrl, search} = parseUrl(url);
+        const parsed = parseUrl(url);
+        if (!parsed) return null;
+
+        const {url: parsedUrl, search} = parsed;
         const requestSegments = this.parseToSegments(parsedUrl);
 
         for (const route of this.routes) {

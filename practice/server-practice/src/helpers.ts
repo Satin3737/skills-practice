@@ -3,9 +3,17 @@ import {BaseUrl, BodyLimit} from '@/const';
 import {BodyTooBigError} from '@/errors';
 import type {IMessage} from '@/types';
 
-export const parseUrl = (url: string): {url: string; search: URLSearchParams} => {
-    const {pathname, searchParams} = new URL(url, BaseUrl);
-    return {url: pathname, search: searchParams};
+const slashPrefix = /^[/\\]{2}/;
+
+export const parseUrl = (url: string): {url: string; search: URLSearchParams} | null => {
+    if (slashPrefix.test(url)) return null;
+
+    try {
+        const {pathname, searchParams} = new URL(url, BaseUrl);
+        return {url: pathname, search: searchParams};
+    } catch {
+        return null;
+    }
 };
 
 export const getExtname = (filePath: string): string => {
