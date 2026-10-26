@@ -82,9 +82,9 @@ class AppServer {
     }
 
     private checkUrlAndMethodIsValid(req: IMessage['req'], res: IMessage['res']): req is IStrictMessage['req'] {
-        const isValid = !!req.url && !!req.method && this.isMethodAvailable(req.method);
-        if (!isValid) res.writeHead(400).end('Bad request');
-        return isValid;
+        const isAllowed = !!req.url && !!req.method && this.isMethodAvailable(req.method);
+        if (!isAllowed) res.writeHead(405).end('Method Not Allowed');
+        return isAllowed;
     }
 
     private isMethodAvailable(method: string): method is IMethods {
