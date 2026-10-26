@@ -1,0 +1,12 @@
+{
+    "$schema": "https://json.schemastore.org/package.json",
+    "name": "logger-practice",
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "test": "tsx --test \"./**/*.test.ts\""
+    },
+    "author": "satin",
+    "license": "ISC",
+    "description": "logger practice"
+}
