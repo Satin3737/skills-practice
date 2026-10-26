@@ -256,4 +256,33 @@ describe('AppServer (HTTP)', () => {
             assert.ok(!res.body.includes(dir));
         });
     });
+
+    describe('errors after headers are sent', () => {
+        it('aborts the connection instead of leaving the response open', async t => {
+            t.mock.method(console, 'error', () => {});
+            const failing = new TodoController(new TodosService(file));
+            failing.homeTodoHandler = async (_, res) => {
+                res.writeHead(200);
+                res.write('partial');
+                throw new Error('boom');
+            };
+            const broken = new AppServer(failing);
+            const brokenPort = await broken.start(0);
+
+            try {
+                const outcome = await new Promise<string>(resolve => {
+                    setTimeout(() => resolve('hung'), 1000).unref();
+                    const req = http.get({host: '127.0.0.1', port: brokenPort, path: '/'}, res => {
+                        res.on('error', () => resolve('aborted'));
+                        res.on('close', () => resolve(res.complete ? 'completed' : 'aborted'));
+                        res.resume();
+                    });
+                    req.on('error', () => resolve('aborted'));
+                });
+                assert.equal(outcome, 'aborted');
+            } finally {
+                await broken.stop();
+            }
+        });
+    });
 });

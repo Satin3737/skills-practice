@@ -71,7 +71,11 @@ class AppServer {
         const isClientError = status < 500;
 
         if (!isClientError) console.error('Error occurred:', error);
-        if (res.headersSent) return;
+
+        if (res.headersSent) {
+            if (!res.writableEnded) res.destroy();
+            return;
+        }
 
         const message = isClientError && isCustomError ? error.message : 'Internal Server Error';
 
