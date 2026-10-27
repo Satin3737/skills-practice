@@ -20,6 +20,5 @@
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true
     },
-    "exclude": ["node_modules"],
-    "include": [".prettierrc.ts"]
+    "exclude": ["node_modules"]
 }
