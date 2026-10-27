@@ -1,6 +1,12 @@
-import {type ILogTypes, LogTypes} from './types';
+import {type IExecutionTimeOptions, type ILogTypes, type ILoggerConfig, LogTypes} from './types';
 
 class Logger {
+    private static readonly levels: Record<ILogTypes, number> = {
+        [LogTypes.info]: 0,
+        [LogTypes.warn]: 1,
+        [LogTypes.error]: 2
+    };
+
     private static readonly colors: Record<ILogTypes, string> = {
         [LogTypes.info]: '\x1b[34m',
         [LogTypes.warn]: '\x1b[33m',
@@ -8,6 +14,19 @@ class Logger {
     };
 
     private static readonly reset = '\x1b[0m';
+
+    private static config: ILoggerConfig = {
+        level: LogTypes.info,
+        type: LogTypes.info,
+        offset: 0,
+        fixed: 0
+    };
+
+    public static configure(config: Partial<ILoggerConfig>): void {
+        const newConfig = {...Logger.config, ...config};
+        Logger.checkFixedArg(newConfig.fixed);
+        Logger.config = newConfig;
+    }
 
     public static info(...args: unknown[]): void {
         Logger.log(LogTypes.info, ...args);
@@ -23,17 +42,15 @@ class Logger {
 
     public static checkFunctionExecutionTime<T extends (...args: Parameters<T>) => ReturnType<T>>(
         func: T,
-        options?: {type?: ILogTypes; offset?: number; fixed?: number}
+        options: IExecutionTimeOptions = {}
     ): (...args: Parameters<T>) => ReturnType<T> {
-        const {type = LogTypes.info, offset = 0, fixed = 0} = options ?? {};
-        Logger.checkFixedArg(fixed);
+        options.fixed !== undefined && Logger.checkFixedArg(options.fixed);
 
         const funcName = func.name || 'anonymousFunc';
-        const prefillLogPerformance = Logger.logPerformance(type, funcName, offset, fixed);
 
         return (...args: Parameters<T>): ReturnType<T> => {
             const startTime = performance.now();
-            const done = (): void => prefillLogPerformance(performance.now() - startTime);
+            const done = (): void => Logger.logPerformance(funcName, performance.now() - startTime, options);
 
             let result: ReturnType<T>;
 
@@ -54,13 +71,13 @@ class Logger {
         };
     }
 
-    private static logPerformance(type: ILogTypes, name: string, offset: number, fixed: number): CallableFunction {
-        return (executionTime: number): void => {
-            offset < executionTime && Logger[type](`${name} execution takes ${executionTime.toFixed(fixed)}ms`);
-        };
+    private static logPerformance(name: string, executionTime: number, options: IExecutionTimeOptions): void {
+        const {type, offset, fixed} = {...Logger.config, ...options};
+        offset < executionTime && Logger[type](`${name} execution takes ${executionTime.toFixed(fixed)}ms`);
     }
 
     private static log(type: ILogTypes, ...args: unknown[]): void {
+        if (Logger.levels[type] < Logger.levels[Logger.config.level]) return;
         const date = new Date().toLocaleString();
         const tag = process.env.NO_COLOR ? `[${type}]` : `${Logger.colors[type]}[${type}]${Logger.reset}`;
         console.log(`${tag}[${date}]: `, ...args);

@@ -23,6 +23,7 @@ beforeEach(() => {
 
 afterEach(() => {
     mock.restoreAll();
+    Logger.configure({level: LogTypes.info, type: LogTypes.info, offset: 0, fixed: 0});
     if (originalNoColor === undefined) delete process.env.NO_COLOR;
     else process.env.NO_COLOR = originalNoColor;
 });
@@ -228,6 +229,77 @@ describe('Logger.checkFunctionExecutionTime', () => {
     for (const fixed of [-1, 1.5, 101, NaN]) {
         it(`throws RangeError for invalid fixed=${fixed}`, () => {
             assert.throws(() => Logger.checkFunctionExecutionTime(() => {}, {fixed}), RangeError);
+        });
+    }
+});
+
+describe('Logger.configure', () => {
+    it('drops messages below the configured level', () => {
+        Logger.configure({level: LogTypes.warn});
+
+        Logger.info('skip');
+        Logger.warn('keep');
+        Logger.error('keep');
+
+        const types = logSpy.mock.calls.map(call => (call.arguments[0] as string).includes('[warn]'));
+        assert.deepEqual(types, [true, false]);
+    });
+
+    it('uses configured type, offset and fixed as checkFunctionExecutionTime defaults', () => {
+        Logger.configure({type: LogTypes.warn, offset: 10, fixed: 1});
+        function slow(): void {}
+
+        fakeElapsed(5);
+        Logger.checkFunctionExecutionTime(slow)();
+        assert.equal(logSpy.mock.callCount(), 0);
+
+        mock.restoreAll();
+        logSpy = mock.method(console, 'log', () => {});
+        fakeElapsed(12.34);
+        Logger.checkFunctionExecutionTime(slow)();
+
+        const [prefix, msg] = lastCall();
+        assert.ok((prefix as string).includes('[warn]'));
+        assert.equal(msg, 'slow execution takes 12.3ms');
+    });
+
+    it('options override configured defaults', () => {
+        Logger.configure({type: LogTypes.warn, fixed: 2});
+        fakeElapsed(12.34);
+
+        Logger.checkFunctionExecutionTime(() => {}, {type: LogTypes.error, fixed: 0})();
+
+        const [prefix, msg] = lastCall();
+        assert.ok((prefix as string).includes('[error]'));
+        assert.equal(msg, 'anonymousFunc execution takes 12ms');
+    });
+
+    it('applies to functions wrapped before configure', () => {
+        const wrapped = Logger.checkFunctionExecutionTime(() => {});
+        Logger.configure({level: LogTypes.error});
+        fakeElapsed(5);
+
+        wrapped();
+
+        assert.equal(logSpy.mock.callCount(), 0);
+    });
+
+    it('applies level to checkFunctionExecutionTime output', () => {
+        Logger.configure({level: LogTypes.warn});
+        fakeElapsed(5);
+
+        Logger.checkFunctionExecutionTime(() => {})();
+
+        assert.equal(logSpy.mock.callCount(), 0);
+    });
+
+    for (const fixed of [-1, 1.5, 101, NaN]) {
+        it(`throws RangeError for invalid fixed=${fixed} and keeps previous config`, () => {
+            assert.throws(() => Logger.configure({fixed}), RangeError);
+
+            fakeElapsed(1.26);
+            Logger.checkFunctionExecutionTime(() => {})();
+            assert.equal(lastCall()[1], 'anonymousFunc execution takes 1ms');
         });
     }
 });
