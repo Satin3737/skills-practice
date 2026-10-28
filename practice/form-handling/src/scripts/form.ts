@@ -3,11 +3,17 @@ import formSchema, {serverErrorsSchema} from './schema';
 import type {IError, IFormValues} from './types';
 
 class FormHandler {
-    private readonly submitUrl = 'https://httpbin.org/post';
+    private readonly baseUrl = 'https://httpbin.org';
     private readonly submitTimeoutMs = 5000;
     private readonly $form: JQuery<HTMLFormElement>;
     private readonly $responseSuccess: JQuery<HTMLDivElement>;
     private readonly $responseError: JQuery<HTMLDivElement>;
+
+    private readonly submitUrls: Record<string, string> = {
+        valid: `${this.baseUrl}/post`,
+        invalid: `${this.baseUrl}/status/422`,
+        delay: `${this.baseUrl}/delay/5`
+    };
 
     public constructor($form: JQuery<HTMLFormElement>) {
         this.$form = $form;
@@ -77,12 +83,13 @@ class FormHandler {
             });
     }
 
-    private setLoading(state: boolean): void {
-        $('.submit', this.$form).prop('disabled', state).toggleClass('_loading', state);
+    private setLoading(state: boolean, $submitter: JQuery): void {
+        $('.submit', this.$form).prop('disabled', state);
+        $submitter.toggleClass('_loading', state);
     }
 
-    private async submit(data: IFormValues): Promise<IError[]> {
-        const response = await fetch(this.submitUrl, {
+    private async submit(data: IFormValues, url: string): Promise<IError[]> {
+        const response = await fetch(url, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data),
@@ -113,10 +120,14 @@ class FormHandler {
             return;
         }
 
-        this.setLoading(true);
+        const submitter = e.originalEvent instanceof SubmitEvent ? e.originalEvent.submitter : null;
+        const $submitter = submitter ? $(submitter) : $('.submit', this.$form).first();
+        const url = this.submitUrls[$submitter.attr('data-submit') ?? ''] ?? this.submitUrls.valid;
+
+        this.setLoading(true, $submitter);
 
         try {
-            const serverErrors = await this.submit(data);
+            const serverErrors = await this.submit(data, url);
 
             if (serverErrors.length) {
                 this.showErrors(serverErrors);
@@ -129,7 +140,7 @@ class FormHandler {
             console.error(e);
             this.showResponse(this.$responseError);
         } finally {
-            this.setLoading(false);
+            this.setLoading(false, $submitter);
         }
     }
 }

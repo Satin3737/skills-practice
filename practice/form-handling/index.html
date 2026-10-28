@@ -86,10 +86,20 @@
                 <div class="response response-error" data-response="error">
                     <h2 class="title">Something went wrong</h2>
                 </div>
-                <button type="submit" class="button button-primary submit">
-                    Submit
-                    <span class="spinner" aria-label="loading" role="status"></span>
-                </button>
+                <div class="actions">
+                    <button type="submit" class="button button-primary submit" data-submit="valid">
+                        Submit
+                        <span class="spinner" aria-label="loading" role="status"></span>
+                    </button>
+                    <button type="submit" class="button button-secondary submit" data-submit="invalid">
+                        Submit invalid
+                        <span class="spinner" aria-label="loading" role="status"></span>
+                    </button>
+                    <button type="submit" class="button button-secondary submit" data-submit="delay">
+                        Submit with delay
+                        <span class="spinner" aria-label="loading" role="status"></span>
+                    </button>
+                </div>
             </form>
         </main>
         <script type="module" src="/src/main.ts"></script>

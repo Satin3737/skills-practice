@@ -128,6 +128,21 @@ describe('FormHandler', () => {
             expect(init.signal).toBeInstanceOf(AbortSignal);
         });
 
+        it.each([
+            ['invalid', 'https://httpbin.org/status/422'],
+            ['delay', 'https://httpbin.org/delay/3']
+        ])('the %s submit button posts to its url and shows loading only on itself', (type, url) => {
+            const spy = mockFetch(new Promise(() => {}));
+            fillValid();
+            const btn = $form().find(`[data-submit="${type}"]`)[0];
+            $form()[0].dispatchEvent(new SubmitEvent('submit', {bubbles: true, cancelable: true, submitter: btn}));
+
+            expect(spy.mock.calls[0][0]).toBe(url);
+            expect(btn.classList.contains('_loading')).toBe(true);
+            expect(submitBtn().classList.contains('_loading')).toBe(false);
+            expect(submitBtn().disabled).toBe(true);
+        });
+
         it('shows loading, then resets the form and shows success for 3s', async () => {
             const {promise, resolve} = Promise.withResolvers<Response>();
             mockFetch(promise);
