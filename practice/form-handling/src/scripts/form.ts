@@ -1,20 +1,10 @@
 import $ from 'jquery';
-import type {z} from 'zod';
-import formSchema from './schema';
-
-interface IFormValues {
-    name: string;
-    surname: string;
-    age: number;
-    email: string;
-    color: string;
-    preferences: string[];
-    comment: string;
-}
-
-type IError = z.core.$ZodIssue;
+import formSchema, {serverErrorsSchema} from './schema';
+import type {IError, IFormValues} from './types';
 
 class FormHandler {
+    private readonly submitUrl = 'https://httpbin.org/post';
+    private readonly submitTimeoutMs = 5000;
     private readonly $form: JQuery<HTMLFormElement>;
     private readonly $responseSuccess: JQuery<HTMLDivElement>;
     private readonly $responseError: JQuery<HTMLDivElement>;
@@ -91,29 +81,23 @@ class FormHandler {
         $('.submit', this.$form).prop('disabled', state).toggleClass('_loading', state);
     }
 
-    private async fakeSubmit(data: IFormValues): Promise<void> {
-        console.log('From submitted with data', data);
+    private async submit(data: IFormValues): Promise<IError[]> {
+        const response = await fetch(this.submitUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+            signal: AbortSignal.timeout(this.submitTimeoutMs)
+        });
 
-        // fake loading + success
-        return new Promise(resolve => setTimeout(resolve, 3000));
+        if (response.status === 422) {
+            return serverErrorsSchema.parse(await response.json()).errors;
+        }
 
-        // --------------------------------------------------------
+        if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`);
+        }
 
-        // fake loading + error
-        // await new Promise(resolve => setTimeout(resolve, 3000));
-        //
-        // const response = await fetch('example.com', {
-        //     method: 'POST',
-        //     headers: {'Content-Type': 'application/json'},
-        //     body: JSON.stringify(data)
-        // });
-        //
-        // if (!response.ok) {
-        //     throw new Error(`Response status: ${response.status}`);
-        // }
-        //
-        // const result = await response.json();
-        // console.log('Response:', result);
+        return [];
     }
 
     private async handleSubmit(e: JQuery.SubmitEvent): Promise<void> {
@@ -132,7 +116,13 @@ class FormHandler {
         this.setLoading(true);
 
         try {
-            await this.fakeSubmit(data);
+            const serverErrors = await this.submit(data);
+
+            if (serverErrors.length) {
+                this.showErrors(serverErrors);
+                return;
+            }
+
             this.$form[0].reset();
             this.showResponse(this.$responseSuccess);
         } catch (e) {

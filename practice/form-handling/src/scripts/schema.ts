@@ -22,4 +22,13 @@ const formSchema = z.object({
         .max(240, 'Comment must be no longer than 240 characters')
 });
 
+export const serverErrorsSchema = z.object({
+    errors: z.array(
+        z.object({
+            path: z.array(z.union([z.string(), z.number()])),
+            message: z.string()
+        })
+    )
+});
+
 export default formSchema;

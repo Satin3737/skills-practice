@@ -33,8 +33,13 @@ const fillValid = (): void => {
 };
 const errorText = (selector: string): string => $form().find(selector).text();
 const submitBtn = (): HTMLButtonElement => $form().find('.submit')[0] as HTMLButtonElement;
-// private on purpose; the real implementation is a 3s fake request
-const fakeSubmit = () => vi.spyOn(FormHandler.prototype as unknown as {fakeSubmit: () => Promise<void>}, 'fakeSubmit');
+const mockFetch = (response: Promise<Response>) => {
+    const spy = vi.fn((_url: string, _init: RequestInit) => response);
+    vi.stubGlobal('fetch', spy);
+    return spy;
+};
+const json = (body: unknown, status = 200): Promise<Response> =>
+    Promise.resolve(new Response(JSON.stringify(body), {status}));
 
 describe('FormHandler', () => {
     beforeEach(() => {
@@ -47,11 +52,12 @@ describe('FormHandler', () => {
     afterEach(() => {
         vi.useRealTimers();
         vi.restoreAllMocks();
+        vi.unstubAllGlobals();
     });
 
     describe('validation', () => {
         it('shows an error for every field of an empty form and does not submit', () => {
-            const spy = fakeSubmit();
+            const spy = mockFetch(json({}));
             submit();
 
             expect(errorText('.field:has([name="name"]) .error')).toMatch(/at least 2/);
@@ -95,19 +101,22 @@ describe('FormHandler', () => {
         it('re-submit clears previous errors once data becomes valid', () => {
             submit();
             fillValid();
-            fakeSubmit().mockResolvedValue();
+            mockFetch(json({}));
             submit();
             expect($form().find('.error').filter((_, el) => el.textContent !== '')).toHaveLength(0);
         });
     });
 
     describe('submission', () => {
-        it('passes parsed data to the request', () => {
-            const spy = fakeSubmit().mockResolvedValue();
+        it('posts parsed data as JSON', () => {
+            const spy = mockFetch(json({}));
             fillValid();
             submit();
 
-            expect(spy).toHaveBeenCalledWith({
+            const [url, init] = spy.mock.calls[0];
+            expect(url).toBe('https://httpbin.org/post');
+            expect(init.method).toBe('POST');
+            expect(JSON.parse(String(init.body))).toEqual({
                 name: 'John',
                 surname: 'Doe',
                 age: 30,
@@ -116,16 +125,20 @@ describe('FormHandler', () => {
                 preferences: ['best', 'sad'],
                 comment: 'A comment long enough'
             });
+            expect(init.signal).toBeInstanceOf(AbortSignal);
         });
 
         it('shows loading, then resets the form and shows success for 3s', async () => {
+            const {promise, resolve} = Promise.withResolvers<Response>();
+            mockFetch(promise);
             fillValid();
             submit();
 
             expect(submitBtn().disabled).toBe(true);
             expect(submitBtn().classList.contains('_loading')).toBe(true);
 
-            await vi.advanceTimersByTimeAsync(3000);
+            resolve(new Response('{}'));
+            await vi.advanceTimersByTimeAsync(0);
 
             expect(submitBtn().disabled).toBe(false);
             expect(submitBtn().classList.contains('_loading')).toBe(false);
@@ -138,9 +151,25 @@ describe('FormHandler', () => {
             expect($('[data-response="success"]').hasClass('_show')).toBe(false);
         });
 
-        it('on failure keeps the data, shows the error response and re-enables the button', async () => {
+        it('shows server validation errors next to the fields and keeps the data', async () => {
+            mockFetch(json({errors: [{path: ['email'], message: 'Email is already taken'}]}, 422));
+            fillValid();
+            submit();
+            await vi.advanceTimersByTimeAsync(0);
+
+            expect(errorText('.field:has([name="email"]) .error')).toBe('Email is already taken');
+            expect(($form().find('[name="email"]')[0] as HTMLInputElement).value).toBe('john@example.com');
+            expect($('[data-response="success"]').hasClass('_show')).toBe(false);
+            expect($('[data-response="error"]').hasClass('_show')).toBe(false);
+            expect(submitBtn().disabled).toBe(false);
+        });
+
+        it.each([
+            ['server error', () => json({}, 500)],
+            ['network error or timeout', () => Promise.reject(new DOMException('timeout', 'TimeoutError'))]
+        ])('on %s keeps the data, shows the error response and re-enables the button', async (_, response) => {
             const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-            fakeSubmit().mockRejectedValue(new Error('boom'));
+            mockFetch(response());
             fillValid();
             submit();
             await vi.advanceTimersByTimeAsync(0);
