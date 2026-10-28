@@ -1,7 +1,7 @@
-import Command from '../Command';
+import BaseCounterCommand from './BaseCounterCommand';
 
-class ResetCommand extends Command {
-    public exec(): void {
+class ResetCommand extends BaseCounterCommand {
+    protected do(): void {
         this.counter.reset();
     }
 }

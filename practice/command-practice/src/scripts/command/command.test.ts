@@ -32,18 +32,10 @@ describe('commands', () => {
         ['SetCommand', (c: Counter) => new SetCommand(c, -3), -3]
     ])('%s exec applies and undo restores the saved backup', (_, create, expected) => {
         const command = create(counter);
-        command.saveBackup();
         command.exec();
         expect(counter.count).toBe(expected);
         command.undo();
         expect(counter.count).toBe(5);
-    });
-
-    it('undo without saveBackup falls back to 0', () => {
-        const command = new IncrementCommand(counter);
-        command.exec();
-        command.undo();
-        expect(counter.count).toBe(0);
     });
 });
 

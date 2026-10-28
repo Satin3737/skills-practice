@@ -1,7 +1,7 @@
 import type Counter from '@/scripts/Counter';
-import Command from '../Command';
+import BaseCounterCommand from './BaseCounterCommand';
 
-class SetCommand extends Command {
+class SetCommand extends BaseCounterCommand {
     private count: number;
 
     public constructor(counter: Counter, count: number) {
@@ -9,7 +9,7 @@ class SetCommand extends Command {
         this.count = count;
     }
 
-    public exec(): void {
+    protected do(): void {
         this.counter.count = this.count;
     }
 }

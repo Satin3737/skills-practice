@@ -13,7 +13,6 @@ class CommandsRunner {
     }
 
     public runCommand(command: Command): void {
-        command.saveBackup();
         command.exec();
         this.undoList.push(command);
         this.redoList = [];

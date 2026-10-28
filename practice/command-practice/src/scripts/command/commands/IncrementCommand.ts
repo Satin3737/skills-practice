@@ -1,7 +1,7 @@
-import Command from '../Command';
+import BaseCounterCommand from './BaseCounterCommand';
 
-class IncrementCommand extends Command {
-    public exec(): void {
+class IncrementCommand extends BaseCounterCommand {
+    protected do(): void {
         this.counter.increment();
     }
 }
