@@ -52,7 +52,7 @@ class AssistantService {
     private async getChatContext(sessionId: number): Promise<MessageParam[]> {
         const messages = await this.db.chatMessage.findMany({
             where: {sessionId},
-            orderBy: {createdAt: 'desc'},
+            orderBy: {id: 'desc'},
             take: this.assistant.contextWindow
         });
 

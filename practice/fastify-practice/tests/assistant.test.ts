@@ -174,6 +174,29 @@ describe('assistant', () => {
             ws.terminate();
         });
 
+        it('keeps the history in insertion order when timestamps are equal', async () => {
+            const {sessionId, token} = await createChatSession(app, {email: 'history@empire.com'});
+            const createdAt = new Date();
+            await app.prisma.chatMessage.createMany({
+                data: [
+                    {sessionId, role: ChatRole.user, content: 'question', createdAt},
+                    {sessionId, role: ChatRole.assistant, content: 'answer', createdAt}
+                ]
+            });
+
+            mockAssistantReplies(app, 'ok');
+
+            const ws = await openChatSocket(app, sessionId, token);
+
+            const reply = waitForMessage(ws);
+            ws.send(JSON.stringify({type: 'message', content: 'follow-up'}));
+            await reply;
+            ws.terminate();
+
+            const [context] = vi.mocked(app.assistant.runToolLoop).mock.calls[0];
+            expect(context.map(m => m.content)).toEqual(['question', 'answer', 'follow-up']);
+        });
+
         it('rejects a message longer than the limit', async () => {
             const {sessionId, token} = await createChatSession(app, {email: 'spam@empire.com'});
             const spy = vi.spyOn(app.assistant, 'runToolLoop').mockReset();
