@@ -13,7 +13,7 @@ const validationPlugin = fp(
                 const meta = error.meta;
 
                 if (error.code === 'P2025') return res.notFound('Resource not found');
-                if (error.code === 'P2002') return res.conflict(`Duplicate value for ${meta?.target}`);
+                if (error.code === 'P2002') return res.conflict(`Duplicate value for ${meta?.modelName}`);
                 if (error.code === 'P2003') return res.badRequest(`Related record not found for ${meta?.modelName}`);
             }
 

@@ -57,6 +57,7 @@ describe('auth', () => {
             const {res} = await registerUser(app, {email: 'dup@rebels.com'});
 
             expect(res.statusCode).toBe(409);
+            expect(res.json().message).toBe('Duplicate value for User');
             expect(app.emailQueue.add).toHaveBeenCalledTimes(1);
         });
 
