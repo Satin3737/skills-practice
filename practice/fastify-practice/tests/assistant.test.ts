@@ -174,6 +174,39 @@ describe('assistant', () => {
             ws.terminate();
         });
 
+        it('rejects a message longer than the limit', async () => {
+            const {sessionId, token} = await createChatSession(app, {email: 'spam@empire.com'});
+            const spy = vi.spyOn(app.assistant, 'runToolLoop').mockReset();
+
+            const ws = await openChatSocket(app, sessionId, token);
+
+            const reply = waitForMessage(ws);
+            ws.send(JSON.stringify({type: 'message', content: 'x'.repeat(4001)}));
+
+            expect(await reply).toEqual({type: 'error', content: 'Invalid message format.'});
+            expect(spy).not.toHaveBeenCalled();
+            ws.terminate();
+        });
+
+        it('rejects a new message while the previous one is still being processed', async () => {
+            const {sessionId, token} = await createChatSession(app, {email: 'eager@empire.com'});
+            const {promise, resolve} = Promise.withResolvers<string>();
+            const spy = vi.spyOn(app.assistant, 'runToolLoop').mockReset().mockReturnValueOnce(promise);
+
+            const ws = await openChatSocket(app, sessionId, token);
+
+            const busyReply = waitForMessage(ws);
+            ws.send(JSON.stringify({type: 'message', content: 'first'}));
+            ws.send(JSON.stringify({type: 'message', content: 'second'}));
+            expect(await busyReply).toEqual({type: 'error', content: 'Please wait for the previous reply.'});
+
+            const reply = waitForMessage(ws);
+            resolve('done');
+            expect(await reply).toEqual({type: 'message', content: 'done'});
+            expect(spy).toHaveBeenCalledTimes(1);
+            ws.terminate();
+        });
+
         it('responds with an error and persists nothing when the tool loop rejects', async () => {
             const {sessionId, token} = await createChatSession(app, {email: 'vader2@empire.com'});
 

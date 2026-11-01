@@ -28,5 +28,5 @@ export const getSessionsChatSchema = {
 
 export const socketMessageSchema = z.object({
     type: z.enum(SocketMessageType),
-    content: z.string()
+    content: z.string().min(1).max(4000)
 });

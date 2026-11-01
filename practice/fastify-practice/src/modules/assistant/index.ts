@@ -47,7 +47,20 @@ const assistant: FastifyPluginAsyncZod = async (fastify): Promise<void> => {
                 prompt: assistant.buildPrompt(user.stormtrooper.callSign, user.rank)
             }));
 
+            let isBusy = false;
+
             socket.on('message', async message => {
+                if (isBusy) {
+                    return socket.send(
+                        JSON.stringify({
+                            type: SocketMessageType.error,
+                            content: 'Please wait for the previous reply.'
+                        })
+                    );
+                }
+
+                isBusy = true;
+
                 try {
                     const {stormtrooperId, prompt} = await sessionContextPromise;
                     const parsed = socketMessageSchema.safeParse(JSON.parse(message.toString()));
@@ -81,6 +94,8 @@ const assistant: FastifyPluginAsyncZod = async (fastify): Promise<void> => {
                                     : 'An error occurred while processing your request.'
                         })
                     );
+                } finally {
+                    isBusy = false;
                 }
             });
         }
