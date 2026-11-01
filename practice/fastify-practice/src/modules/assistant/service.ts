@@ -17,12 +17,12 @@ class AssistantService {
     }
 
     public getChatSessions(userId: number): Promise<ChatSession[]> {
-        return this.db.chatSession.findMany({where: {userId}});
+        return this.db.chatSession.findMany({where: {userId}, orderBy: {id: 'asc'}});
     }
 
     public async getChatSessionMessages(id: number, userId: number): Promise<ChatMessage[]> {
         const session = await this.assertChatSessionOwnership(id, userId);
-        return this.db.chatMessage.findMany({where: {sessionId: session.id}});
+        return this.db.chatMessage.findMany({where: {sessionId: session.id}, orderBy: {id: 'asc'}});
     }
 
     public async assertChatSessionOwnership(id: number, userId: number): Promise<ChatSession> {
