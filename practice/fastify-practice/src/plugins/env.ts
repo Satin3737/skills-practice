@@ -7,6 +7,7 @@ const schema = z.object({
     PORT: z.coerce.number().default(3000),
     NODE_ENV: z.enum(Environment).default(Environment.development),
     CORS_ORIGIN: z.string(),
+    PUBLIC_URL: z.string(),
     DATABASE_URL: z.string(),
     JWT_SECRET: z.string(),
     JWT_EXPIRES_IN: z.coerce.number(),
