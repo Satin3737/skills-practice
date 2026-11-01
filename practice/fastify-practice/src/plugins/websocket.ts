@@ -3,7 +3,7 @@ import fp from 'fastify-plugin';
 
 const websocketPlugin = fp(
     async fastify => {
-        await fastify.register(websocket);
+        await fastify.register(websocket, {options: {maxPayload: 64 * 1024}});
     },
     {name: 'websocket'}
 );
