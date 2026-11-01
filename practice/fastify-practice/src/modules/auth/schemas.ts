@@ -14,7 +14,6 @@ export const registerUserSchema = {
         .object({
             email: z.string().regex(/^[^@\s]+@[^@\s]+\.[^@\s]+$/),
             password: passwordSchema,
-            rank: z.enum(UserRank).optional(),
             ...createStormtrooperSchema.body.shape
         })
         .strict(),
@@ -73,7 +72,10 @@ export const getCurrentUserSchema = {
 
 export const updateUserSchema = {
     params: byIdPSchema,
-    body: registerUserSchema.body.partial().refine(data => Object.keys(data).length > 0),
+    body: registerUserSchema.body
+        .extend({rank: z.enum(UserRank)})
+        .partial()
+        .refine(data => Object.keys(data).length > 0),
     response: {
         200: z.object({user: UserPlainPublic})
     }

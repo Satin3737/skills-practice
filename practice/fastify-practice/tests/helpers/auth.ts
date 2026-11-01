@@ -18,7 +18,7 @@ export const registerUser = async (
     const res = await app.inject({
         method: 'POST',
         url: '/auth/register',
-        payload: {email, password, callSign, ...(opts.rank && {rank: opts.rank})}
+        payload: {email, password, callSign}
     });
 
     return {res, email, password, callSign};

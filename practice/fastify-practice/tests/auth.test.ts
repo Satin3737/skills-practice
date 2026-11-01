@@ -41,6 +41,17 @@ describe('auth', () => {
             );
         });
 
+        it('rejects a self-assigned rank', async () => {
+            const res = await app.inject({
+                method: 'POST',
+                url: '/auth/register',
+                payload: {email: 'vader@empire.com', password: 'password123', callSign: 'Vader', rank: UserRank.emperor}
+            });
+
+            expect(res.statusCode).toBe(400);
+            expect(await app.prisma.user.count()).toBe(0);
+        });
+
         it('rejects duplicate email', async () => {
             await registerUser(app, {email: 'dup@rebels.com'});
             const {res} = await registerUser(app, {email: 'dup@rebels.com'});
