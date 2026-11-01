@@ -50,11 +50,12 @@ class MissionsService {
     }
 
     public async updateMission(id: number, data: IUpdateMissionData): Promise<Mission> {
-        const mission = await this.db.mission.update({where: {id}, data});
-        const planet = await this.db.planet.findUnique({where: {id: mission.planetId}});
-        const emperors = await this.db.user.findMany({where: {rank: UserRank.emperor}});
+        const before = await this.db.mission.findUniqueOrThrow({where: {id}, select: {isCompleted: true}});
+        const {planet, ...mission} = await this.db.mission.update({where: {id}, data, include: {planet: true}});
 
-        if (planet && emperors.length) {
+        if (!before.isCompleted && mission.isCompleted) {
+            const emperors = await this.db.user.findMany({where: {rank: UserRank.emperor}});
+
             for (const emperor of emperors) {
                 void this.emailQueue.add('mission-completed', {
                     to: emperor.email,

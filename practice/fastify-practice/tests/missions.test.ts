@@ -148,6 +148,29 @@ describe('missions', () => {
                 expect.objectContaining({to: emperor.email})
             );
         });
+
+        it('queues the email only when the mission becomes completed', async () => {
+            const token = signAccessToken(app, UserRank.captain);
+            const emperorStormtrooper = await app.prisma.stormtrooper.create({data: {callSign: 'Vader'}});
+            await app.prisma.user.create({
+                data: {email: 'emperor@empire.com', rank: UserRank.emperor, stormtrooperId: emperorStormtrooper.id}
+            });
+
+            const patch = (payload: object) =>
+                app.inject({
+                    method: 'PATCH',
+                    url: `/missions/${missionId}`,
+                    headers: {authorization: `Bearer ${token}`},
+                    payload
+                });
+
+            await patch({title: 'Scout the base again'});
+            expect(app.emailQueue.add).not.toHaveBeenCalled();
+
+            await patch({isCompleted: true});
+            await patch({isCompleted: true});
+            expect(app.emailQueue.add).toHaveBeenCalledTimes(1);
+        });
     });
 
     describe('DELETE /missions/:id', () => {
