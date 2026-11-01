@@ -67,7 +67,7 @@ const missions: FastifyPluginAsyncZod = async (fastify): Promise<void> => {
         }
     );
 
-    fastify.get('/feed', async (_, res): Promise<void> => {
+    fastify.get('/feed', {onRequest: fastify.authGuard(UserRank.trooper)}, async (_, res): Promise<void> => {
         void res.hijack();
 
         res.raw.writeHead(200, {

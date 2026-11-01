@@ -58,6 +58,13 @@ describe('missions', () => {
         });
     });
 
+    describe('GET /missions/feed', () => {
+        it('rejects without auth', async () => {
+            const res = await app.inject({method: 'GET', url: '/missions/feed'});
+            expect(res.statusCode).toBe(401);
+        });
+    });
+
     describe('GET /missions/:id', () => {
         it('returns a mission with its planet', async () => {
             const token = signAccessToken(app, UserRank.trooper);
