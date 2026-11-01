@@ -89,17 +89,26 @@ class Assistant {
 
             const toolResults: ToolResultBlockParam[] = await Promise.all(
                 toolUseBlocks.map(async block => {
-                    const toolResult = await this.validateToolInput({
-                        name: block.name,
-                        input: block.input,
-                        stormtrooperId
-                    });
+                    try {
+                        const toolResult = await this.validateToolInput({
+                            name: block.name,
+                            input: block.input,
+                            stormtrooperId
+                        });
 
-                    return {
-                        type: resultStr,
-                        tool_use_id: block.id,
-                        content: JSON.stringify(toolResult)
-                    };
+                        return {
+                            type: resultStr,
+                            tool_use_id: block.id,
+                            content: JSON.stringify(toolResult)
+                        };
+                    } catch {
+                        return {
+                            type: resultStr,
+                            tool_use_id: block.id,
+                            content: 'No data found or the lookup failed.',
+                            is_error: true
+                        };
+                    }
                 })
             );
 

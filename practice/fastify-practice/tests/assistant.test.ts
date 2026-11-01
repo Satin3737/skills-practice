@@ -1,3 +1,5 @@
+import type {Anthropic} from '@anthropic-ai/sdk';
+import type {Message, MessageParam} from '@anthropic-ai/sdk/resources';
 import type {FastifyInstance} from 'fastify';
 import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
 import {ChatRole} from '@/database/prisma/enums';
@@ -245,6 +247,28 @@ describe('assistant', () => {
 
             const messages = await app.prisma.chatMessage.findMany({where: {sessionId}});
             expect(messages).toHaveLength(0);
+        });
+    });
+
+    describe('Assistant.runToolLoop', () => {
+        it('reports a failed tool as an error result instead of throwing', async () => {
+            const {messages} = (app.assistant as unknown as {client: Anthropic}).client;
+            const create = vi
+                .spyOn(messages, 'create')
+                .mockResolvedValueOnce({
+                    stop_reason: 'tool_use',
+                    content: [{type: 'tool_use', id: 'tool-1', name: 'get_weapon_info', input: {weaponId: 999999}}]
+                } as unknown as Message)
+                .mockResolvedValueOnce({
+                    stop_reason: 'end_turn',
+                    content: [{type: 'text', text: 'No such weapon, I am afraid.'}]
+                } as unknown as Message);
+
+            const reply = await app.assistant.runToolLoop([{role: 'user', content: 'weapon 999999?'}], 'prompt', 1);
+
+            expect(reply).toBe('No such weapon, I am afraid.');
+            const [{messages: sent}] = create.mock.calls[1] as unknown as [{messages: MessageParam[]}];
+            expect(sent.at(-1)?.content).toEqual([expect.objectContaining({tool_use_id: 'tool-1', is_error: true})]);
         });
     });
 });
