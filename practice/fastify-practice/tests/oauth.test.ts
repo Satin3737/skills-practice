@@ -27,6 +27,13 @@ describe('oauth', () => {
         await app.close();
     });
 
+    it.each(['github', 'google'])('redirects %s back to the configured public url', async provider => {
+        const res = await app.inject({method: 'GET', url: `/auth/${provider}`});
+
+        const redirectUri = new URL(res.headers.location as string).searchParams.get('redirect_uri');
+        expect(redirectUri).toBe(`${app.config.PUBLIC_URL}/auth/${provider}/callback`);
+    });
+
     describe('GET /auth/github/callback', () => {
         it('creates a new user from a fresh github account', async () => {
             mockOAuthToken(app.githubOAuth2, 'gh-token');

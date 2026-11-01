@@ -13,7 +13,7 @@ const oauth2Plugin = fp(
                 },
                 auth: oauth2.GITHUB_CONFIGURATION
             },
-            callbackUri: 'http://localhost:3000/auth/github/callback',
+            callbackUri: `${fastify.config.PUBLIC_URL}/auth/github/callback`,
             scope: ['read:user', 'user:email']
         });
 
@@ -27,7 +27,7 @@ const oauth2Plugin = fp(
                 },
                 auth: oauth2.GOOGLE_CONFIGURATION
             },
-            callbackUri: 'http://localhost:3000/auth/google/callback',
+            callbackUri: `${fastify.config.PUBLIC_URL}/auth/google/callback`,
             scope: ['openid', 'profile', 'email']
         });
     },
