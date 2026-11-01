@@ -18,7 +18,7 @@ class UsersService {
     public async createUser(data: IRegisterUserData): Promise<User> {
         const {email, password, callSign} = data;
         const hash = await hashPassword(password);
-        const user = this.db.user.create({data: {email, password: hash, stormtrooper: {create: {callSign}}}});
+        const user = await this.db.user.create({data: {email, password: hash, stormtrooper: {create: {callSign}}}});
         void this.emailQueue.add('welcome', {to: email, ...EmailTemplates.getWelcomeTemplate(callSign)});
         return user;
     }

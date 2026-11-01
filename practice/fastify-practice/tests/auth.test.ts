@@ -57,6 +57,15 @@ describe('auth', () => {
             const {res} = await registerUser(app, {email: 'dup@rebels.com'});
 
             expect(res.statusCode).toBe(409);
+            expect(app.emailQueue.add).toHaveBeenCalledTimes(1);
+        });
+
+        it('escapes the call sign in the welcome email html', async () => {
+            await registerUser(app, {callSign: '<a href="x">Win</a>'});
+
+            const [, email] = vi.mocked(app.emailQueue.add).mock.calls[0];
+            expect(email.html).toContain('&#60;a href=&#34;x&#34;&#62;Win&#60;/a&#62;');
+            expect(email.html).not.toContain('<a');
         });
 
         it('rejects invalid email format', async () => {
