@@ -37,7 +37,7 @@ class StormtroopersService {
     }
 
     public deleteStormtrooper(id: number): Promise<Stormtrooper> {
-        return this.db.stormtrooper.delete({where: {id}});
+        return this.db.stormtrooper.delete({where: {id, user: null}});
     }
 }
 

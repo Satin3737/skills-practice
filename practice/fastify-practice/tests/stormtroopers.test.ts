@@ -112,6 +112,22 @@ describe('stormtroopers', () => {
             const getRes = await app.inject({method: 'GET', url: `/stormtroopers/${stormtrooperId}`});
             expect(getRes.statusCode).toBe(404);
         });
+
+        it('refuses to delete a stormtrooper linked to a user', async () => {
+            const token = signAccessToken(app, UserRank.captain);
+            const emperor = await app.prisma.user.create({
+                data: {email: 'palpatine@empire.com', rank: UserRank.emperor, stormtrooperId}
+            });
+
+            const res = await app.inject({
+                method: 'DELETE',
+                url: `/stormtroopers/${stormtrooperId}`,
+                headers: {authorization: `Bearer ${token}`}
+            });
+
+            expect(res.statusCode).toBe(404);
+            expect(await app.prisma.user.findUnique({where: {id: emperor.id}})).not.toBeNull();
+        });
     });
 
     describe('weapon assignment', () => {
