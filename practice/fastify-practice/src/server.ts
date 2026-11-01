@@ -8,10 +8,7 @@ class Server {
     public readonly app: FastifyInstance;
 
     public constructor() {
-        this.app = Fastify({
-            logger: getLoggerConfig(),
-            ajv: {customOptions: {allErrors: true}}
-        }).withTypeProvider<ZodTypeProvider>();
+        this.app = Fastify({logger: getLoggerConfig()}).withTypeProvider<ZodTypeProvider>();
 
         this.app.setValidatorCompiler(validatorCompiler);
         this.app.setSerializerCompiler(serializerCompiler);

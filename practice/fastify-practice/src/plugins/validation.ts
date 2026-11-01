@@ -3,7 +3,6 @@ import fp from 'fastify-plugin';
 import {PrismaClientKnownRequestError} from '@/database/prisma/internal/prismaNamespace';
 
 const fieldName = (err: NonNullable<FastifyError['validation']>[number]): string => {
-    if (err.keyword === 'required') return String(err.params.missingProperty);
     return err.instancePath.replace(/^\//, '').replace(/\//g, '.') || '_';
 };
 
@@ -22,14 +21,7 @@ const validationPlugin = fp(
                 const errors: Record<string, string> = {};
 
                 for (const e of error.validation) {
-                    const field = fieldName(e);
-                    const message = e.message ?? 'invalid';
-
-                    if (e.keyword === 'enum' && Array.isArray(e.params.allowedValues)) {
-                        errors[field] = `${message}: ${e.params.allowedValues}`;
-                    } else {
-                        errors[field] = message;
-                    }
+                    errors[fieldName(e)] = e.message ?? 'invalid';
                 }
 
                 return res.status(400).send({

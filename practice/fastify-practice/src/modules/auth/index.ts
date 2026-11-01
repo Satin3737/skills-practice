@@ -95,8 +95,7 @@ const auth: FastifyPluginAsyncZod = async (fastify): Promise<void> => {
     fastify.post('/logout-all', {schema: logoutUserSchema}, async (req, res): Promise<void> => {
         try {
             await req.jwtVerify({onlyCookie: true});
-            const id = req.user.id;
-            !!id && (await sessionsService.deleteAllSessions(id));
+            await sessionsService.deleteAllSessions(req.user.id);
         } catch {
             fastify.log.info('Force logout');
         }
