@@ -13,14 +13,10 @@ class EmailService {
         this.client = nodemailer.createTransport(options);
     }
 
-    public async sendMail(options: IEmailOptions): Promise<SentMessageInfo | void> {
-        try {
-            const result = await this.client.sendMail({from: this.sender, ...options});
-            this.logger.info(result, 'Email sent successfully');
-            return result;
-        } catch (error) {
-            this.logger.error(error, 'Error sending email');
-        }
+    public async sendMail(options: IEmailOptions): Promise<SentMessageInfo> {
+        const result = await this.client.sendMail({from: this.sender, ...options});
+        this.logger.info(result, 'Email sent successfully');
+        return result;
     }
 }
 
