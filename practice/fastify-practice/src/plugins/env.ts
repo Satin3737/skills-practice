@@ -10,7 +10,6 @@ const schema = z.object({
     PUBLIC_URL: z.string(),
     DATABASE_URL: z.string(),
     JWT_SECRET: z.string(),
-    JWT_EXPIRES_IN: z.coerce.number(),
     GITHUB_CLIENT_ID: z.string(),
     GITHUB_CLIENT_SECRET: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
