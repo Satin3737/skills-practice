@@ -50,7 +50,7 @@ describe('TablePagination', () => {
 
     it('offers all limits with the current one selected', () => {
         setup({limit: 15});
-        const select = screen.getByRole('combobox');
+        const select = screen.getByRole('combobox', {name: 'Rows per page'});
         expect(select).toHaveValue('15');
         expect(screen.getAllByRole('option').map(o => o.textContent)).toEqual(['5', '10', '15', '20', '25']);
     });

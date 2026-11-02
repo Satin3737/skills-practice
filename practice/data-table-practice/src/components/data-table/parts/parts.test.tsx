@@ -94,6 +94,23 @@ describe('HeadCell', () => {
         expect(new Set(icons).size).toBe(3);
         expect(svgFor(undefined, 'desc')).toBe(icons[0]);
     });
+
+    it.each([
+        [undefined, 'asc', null],
+        ['name', 'asc', 'ascending'],
+        ['name', 'desc', 'descending']
+    ] as const)('sets aria-sort for sortColumn=%s order=%s', (sortColumn, sortOrder, expected) => {
+        render(
+            <table>
+                <thead>
+                    <tr>
+                        <HeadCell column={column} sortOrder={sortOrder} sortColumn={sortColumn} onSortChange={vi.fn()} />
+                    </tr>
+                </thead>
+            </table>
+        );
+        expect(screen.getByRole('columnheader').getAttribute('aria-sort')).toBe(expected);
+    });
 });
 
 describe('TableSearch', () => {

@@ -57,6 +57,7 @@ const TablePagination: FC<ITablePaginationProps> = ({page, limit, total, setPage
             </div>
             <Select
                 value={limit}
+                aria-label={'Rows per page'}
                 options={Object.entries<ILimit>(Limit).map(([key, value]) => ({value: value, label: key}))}
                 onChange={e => onLimitChange(Number(e.target.value))}
             />

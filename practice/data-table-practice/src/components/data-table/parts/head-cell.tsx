@@ -9,7 +9,10 @@ const HeadCell = <T extends IUnknownObject<T>>({column, sortOrder, sortColumn, o
     const isColumnSorted = sortColumn === column.dataKey;
 
     return (
-        <th className={clsx(styles.cell, styles.headCell)}>
+        <th
+            className={clsx(styles.cell, styles.headCell)}
+            aria-sort={isColumnSorted ? (sortOrder === SortOrder.asc ? 'ascending' : 'descending') : undefined}
+        >
             {column.sortable ? (
                 <button
                     type={'button'}
