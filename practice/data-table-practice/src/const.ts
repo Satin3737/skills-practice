@@ -1,11 +1,5 @@
 export const ApiBaseUrl = 'https://jsonplaceholder.typicode.com';
 
-export const QueryKey = {
-    posts: 'posts',
-    users: 'users',
-    comments: 'comments'
-} as const;
-
 export const SortOrder = {
     asc: 'asc',
     desc: 'desc'

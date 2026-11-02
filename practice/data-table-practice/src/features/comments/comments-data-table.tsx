@@ -1,10 +1,10 @@
 import {type FC, useState} from 'react';
 import {DataTable, type IOnTableChange} from '@/components/data-table';
 import {Limit, SortOrder} from '@/const';
+import useList from '@/hooks/use-list';
 import type {ILimit, ISortOrder} from '@/types';
 import {columns} from './columns';
 import type {IComment} from './types';
-import useComments from './use-comments';
 
 const CommentsDataTable: FC = () => {
     const [page, setPage] = useState<number>(1);
@@ -12,7 +12,7 @@ const CommentsDataTable: FC = () => {
     const [search, setSearch] = useState<string>('');
     const [sort, setSort] = useState<keyof IComment>('postId');
     const [order, setOrder] = useState<ISortOrder>(SortOrder.asc);
-    const {data, isLoading, error} = useComments({page, search, limit, sort, order});
+    const {data, isLoading, error} = useList<IComment>('comments', {page, search, limit, sort, order});
     const {data: tableData = [], total = 0} = data ?? {};
 
     const onTableChange: IOnTableChange<IComment> = ({page, search, sort, order}) => {

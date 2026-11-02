@@ -1,10 +1,10 @@
 import {type FC, useState} from 'react';
 import {DataTable, type IOnTableChange} from '@/components/data-table';
 import {Limit, SortOrder} from '@/const';
+import useList from '@/hooks/use-list';
 import type {ILimit, ISortOrder} from '@/types';
 import {columns} from './columns';
 import type {IUser} from './types';
-import useUsers from './use-users';
 
 const UsersDataTable: FC = () => {
     const [page, setPage] = useState<number>(1);
@@ -12,7 +12,7 @@ const UsersDataTable: FC = () => {
     const [search, setSearch] = useState<string>('');
     const [sort, setSort] = useState<keyof IUser>('name');
     const [order, setOrder] = useState<ISortOrder>(SortOrder.asc);
-    const {data, isLoading, error} = useUsers({page, search, limit, sort, order});
+    const {data, isLoading, error} = useList<IUser>('users', {page, search, limit, sort, order});
     const {data: tableData = [], total = 0} = data ?? {};
 
     const onTableChange: IOnTableChange<IUser> = ({page, search, sort, order}) => {

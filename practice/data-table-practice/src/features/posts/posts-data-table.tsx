@@ -1,10 +1,10 @@
 import {type FC, useState} from 'react';
 import {DataTable, type IOnTableChange} from '@/components/data-table';
 import {Limit, SortOrder} from '@/const';
+import useList from '@/hooks/use-list';
 import type {ILimit, ISortOrder} from '@/types';
 import {columns} from './columns';
 import type {IPost} from './types';
-import usePosts from './use-posts';
 
 const PostsDataTable: FC = () => {
     const [page, setPage] = useState<number>(1);
@@ -12,7 +12,7 @@ const PostsDataTable: FC = () => {
     const [search, setSearch] = useState<string>('');
     const [sort, setSort] = useState<keyof IPost>('id');
     const [order, setOrder] = useState<ISortOrder>(SortOrder.asc);
-    const {data, isLoading, error} = usePosts({page, search, limit, sort, order});
+    const {data, isLoading, error} = useList<IPost>('posts', {page, search, limit, sort, order});
     const {data: tableData = [], total = 0} = data ?? {};
 
     const onTableChange: IOnTableChange<IPost> = ({page, search, sort, order}) => {
