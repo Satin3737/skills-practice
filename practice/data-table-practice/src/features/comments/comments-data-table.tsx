@@ -28,7 +28,9 @@ const CommentsDataTable: FC = () => {
             idKey={'id'}
             data={tableData}
             columns={columns}
-            defaultSortColumn={'postId'}
+            sort={sort}
+            order={order}
+            search={search}
             isLoading={isLoading}
             error={error}
             onTableChange={onTableChange}

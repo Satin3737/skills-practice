@@ -47,7 +47,9 @@ export interface IDataTableProps<T extends IUnknownObject<T>> {
     title?: string;
     data: T[];
     columns: IDataTableColumn<T>[];
-    defaultSortColumn: keyof T;
+    sort: keyof T;
+    order: ISortOrder;
+    search?: string;
     isLoading?: boolean;
     error?: Error | null;
     onTableChange?: IOnTableChange<T>;

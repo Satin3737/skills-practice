@@ -1,7 +1,6 @@
 import clsx from 'clsx';
-import {useEffect, useState} from 'react';
 import {Limit, SortOrder} from '@/const';
-import type {ISortOrder, IUnknownObject} from '@/types';
+import type {IUnknownObject} from '@/types';
 import {getKey, getValue} from './helper';
 import {EmptyDataRow, ErrorRow, HeadCell, TableFilters, TablePagination} from './parts';
 import styles from './styles.module.css';
@@ -12,35 +11,28 @@ const DataTable = <T extends IUnknownObject<T>>({
     title,
     data,
     columns,
-    defaultSortColumn,
+    sort,
+    order,
+    search = '',
     isLoading,
     error,
     pagination,
     showSearch,
     onTableChange
 }: IDataTableProps<T>) => {
-    const [searchData, setSearchData] = useState<string>('');
-    const [sortColumn, setSortColumn] = useState<keyof T>(defaultSortColumn);
-    const [sortOrder, setSortOrder] = useState<ISortOrder>(SortOrder.asc);
-
     const onSortChange = (column: keyof T) => {
-        if (column === sortColumn) {
-            setSortOrder(sortOrder === SortOrder.asc ? SortOrder.desc : SortOrder.asc);
-        } else {
-            setSortColumn(column);
-            setSortOrder(SortOrder.asc);
-        }
+        const nextOrder = column === sort && order === SortOrder.asc ? SortOrder.desc : SortOrder.asc;
+        onTableChange?.({page: 1, search, sort: column, order: nextOrder});
     };
 
-    useEffect(() => {
-        if (!onTableChange) return;
-        onTableChange({page: 1, search: searchData, sort: sortColumn, order: sortOrder});
-    }, [searchData, sortColumn, sortOrder, onTableChange]);
+    const onSearchChange = (value: string) => {
+        onTableChange?.({page: 1, search: value, sort, order});
+    };
 
     return (
         <div className={styles.wrapper}>
             {!!title && <h2 className={'title'}>{title}</h2>}
-            {!!showSearch && <TableFilters search={searchData} setSearch={setSearchData} />}
+            {!!showSearch && <TableFilters search={search} setSearch={onSearchChange} />}
             <div className={styles.tableWrapper}>
                 <table className={styles.table}>
                     <thead>
@@ -49,8 +41,8 @@ const DataTable = <T extends IUnknownObject<T>>({
                                 <HeadCell
                                     key={getKey(column.dataKey)}
                                     column={column}
-                                    sortOrder={sortOrder}
-                                    sortColumn={sortColumn}
+                                    sortOrder={order}
+                                    sortColumn={sort}
                                     onSortChange={onSortChange}
                                 />
                             ))}

@@ -28,7 +28,9 @@ const PostsDataTable: FC = () => {
             idKey={'id'}
             data={tableData}
             columns={columns}
-            defaultSortColumn={'id'}
+            sort={sort}
+            order={order}
+            search={search}
             isLoading={isLoading}
             error={error}
             onTableChange={onTableChange}

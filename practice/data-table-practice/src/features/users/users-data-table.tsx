@@ -28,7 +28,9 @@ const UsersDataTable: FC = () => {
             idKey={'id'}
             data={tableData}
             columns={columns}
-            defaultSortColumn={'name'}
+            sort={sort}
+            order={order}
+            search={search}
             isLoading={isLoading}
             error={error}
             onTableChange={onTableChange}

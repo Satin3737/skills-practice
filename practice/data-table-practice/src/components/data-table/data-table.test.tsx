@@ -1,5 +1,6 @@
 import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import {useState} from 'react';
 import {describe, expect, it, vi} from 'vitest';
 import DataTable from './data-table';
 import type {IDataTableColumn, IDataTableProps} from './types';
@@ -28,7 +29,8 @@ const setup = (props: Partial<IDataTableProps<IRow>> = {}) => {
             idKey={'id'}
             data={data}
             columns={columns}
-            defaultSortColumn={'name'}
+            sort={'name'}
+            order={'asc'}
             onTableChange={onTableChange}
             {...props}
         />
@@ -91,38 +93,61 @@ describe('DataTable', () => {
     });
 
     describe('onTableChange', () => {
-        it('fires on mount with the default sort', () => {
+        it('does not fire on render', () => {
             const {onTableChange} = setup();
-            expect(onTableChange).toHaveBeenCalledExactlyOnceWith({page: 1, search: '', sort: 'name', order: 'asc'});
+            expect(onTableChange).not.toHaveBeenCalled();
         });
 
-        it('does not throw without a handler', () => {
-            expect(() => setup({onTableChange: undefined})).not.toThrow();
+        it('does not throw without a handler', async () => {
+            const {user} = setup({onTableChange: undefined});
+            await expect(user.click(screen.getByRole('button', {name: 'Name'}))).resolves.not.toThrow();
         });
 
-        it('toggles the order when the active column is clicked again', async () => {
-            const {onTableChange, user} = setup();
+        it.each([
+            ['asc', 'desc'],
+            ['desc', 'asc']
+        ] as const)('toggles %s to %s when the active column is clicked', async (order, expected) => {
+            const {onTableChange, user} = setup({order});
 
             await user.click(screen.getByRole('button', {name: 'Name'}));
-            expect(onTableChange).toHaveBeenLastCalledWith({page: 1, search: '', sort: 'name', order: 'desc'});
-
-            await user.click(screen.getByRole('button', {name: 'Name'}));
-            expect(onTableChange).toHaveBeenLastCalledWith({page: 1, search: '', sort: 'name', order: 'asc'});
+            expect(onTableChange).toHaveBeenCalledExactlyOnceWith({page: 1, search: '', sort: 'name', order: expected});
         });
 
         it('switches column and resets the order to asc', async () => {
-            const {onTableChange, user} = setup();
+            const {onTableChange, user} = setup({order: 'desc'});
 
-            await user.click(screen.getByRole('button', {name: 'Name'}));
             await user.click(screen.getByRole('button', {name: 'ID'}));
-            expect(onTableChange).toHaveBeenLastCalledWith({page: 1, search: '', sort: 'id', order: 'asc'});
+            expect(onTableChange).toHaveBeenCalledExactlyOnceWith({page: 1, search: '', sort: 'id', order: 'asc'});
         });
 
-        it('reports the search text', async () => {
-            const {onTableChange, user} = setup({showSearch: true});
+        it('reports the search text with the current sort', async () => {
+            const {onTableChange, user} = setup({showSearch: true, search: 'b', order: 'desc'});
 
-            await user.type(screen.getByPlaceholderText('Search...'), 'bo');
-            expect(onTableChange).toHaveBeenLastCalledWith({page: 1, search: 'bo', sort: 'name', order: 'asc'});
+            await user.type(screen.getByPlaceholderText('Search...'), 'o');
+            expect(onTableChange).toHaveBeenCalledExactlyOnceWith({page: 1, search: 'bo', sort: 'name', order: 'desc'});
+        });
+
+        it('keeps the page when the handler changes identity between renders', async () => {
+            const Harness = () => {
+                const [page, setPage] = useState(1);
+                return (
+                    <DataTable<IRow>
+                        idKey={'id'}
+                        data={data}
+                        columns={columns}
+                        sort={'name'}
+                        order={'asc'}
+                        onTableChange={params => {
+                            if (params.page !== page) setPage(params.page);
+                        }}
+                        pagination={{page, limit: 5, total: 3, setPage, setLimit: vi.fn()}}
+                    />
+                );
+            };
+            render(<Harness />);
+
+            await userEvent.click(screen.getByRole('button', {name: 'Next page'}));
+            expect(screen.getByText('2', {selector: 'span'})).toBeInTheDocument();
         });
     });
 
