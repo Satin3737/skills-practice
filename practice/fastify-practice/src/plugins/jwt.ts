@@ -18,6 +18,7 @@ const jwtPlugin = fp(
                     id: payload.sub,
                     rank: payload.rank,
                     tokenType: payload.tokenType,
+                    tokenId: payload.tokenId,
                     sessionId: payload.sessionId
                 };
             }

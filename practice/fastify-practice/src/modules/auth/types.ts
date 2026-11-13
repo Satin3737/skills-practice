@@ -17,6 +17,7 @@ export type ITokenTypes = IValuesOf<typeof TokenTypes>;
 export interface IJWTPayload {
     rank: UserRank;
     tokenType: ITokenTypes;
+    tokenId?: string;
     sessionId?: string;
 }
 
