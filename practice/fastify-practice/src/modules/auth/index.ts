@@ -2,7 +2,7 @@ import {httpErrors} from '@fastify/sensible';
 import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
 import {AccountProvider, UserRank} from '@/database/prisma/enums';
 import {RefreshCookieName, TokenTypes, UserRankValue, refreshCookieOptions} from './const';
-import {hashPassword, startSession, verifyPassword} from './helper';
+import {hashPassword, issueToken, startSession, verifyPassword} from './helper';
 import OAuthService from './oauth/service';
 import {
     changeUserPasswordSchema,
@@ -15,12 +15,11 @@ import {
     registerUserSchema
 } from './schemas';
 import {registerAuthJobs} from './sessions/jobs';
-import SessionsRedisService from './sessions/redis';
 import SessionsService from './sessions/service';
 
 const auth: FastifyPluginAsyncZod = async (fastify): Promise<void> => {
     const prisma = fastify.prisma;
-    const sessionsService = new SessionsService(prisma, new SessionsRedisService(fastify.redisFailFast, fastify.log));
+    const sessionsService = new SessionsService(prisma);
     const usersService = fastify.usersService;
     const oAuthService = new OAuthService(prisma);
 
@@ -60,20 +59,19 @@ const auth: FastifyPluginAsyncZod = async (fastify): Promise<void> => {
         {schema: refreshTokenSchema, config: {rateLimit: {max: 5}}},
         async (req, res): Promise<void> => {
             await req.jwtVerify({onlyCookie: true});
-            const {id, tokenType, sessionId} = req.user;
+            const {id, tokenType, tokenId, sessionId} = req.user;
 
-            if (tokenType !== TokenTypes.refresh || !sessionId) throw httpErrors.unauthorized();
+            if (tokenType !== TokenTypes.refresh || !sessionId || !tokenId) throw httpErrors.unauthorized();
 
-            const session = await sessionsService.getSessionById(sessionId);
-            if (!session || session.userId !== id) throw httpErrors.unauthorized();
+            const session = await sessionsService.rotateToken(sessionId, tokenId);
 
-            if (session.expiresAt < new Date()) {
-                await sessionsService.deleteSession(sessionId);
+            if (!session || session.userId !== id) {
+                void res.clearCookie(RefreshCookieName, {path: refreshCookieOptions.path});
                 throw httpErrors.unauthorized();
             }
 
             const user = await usersService.getUserById(id);
-            const accessToken = await res.jwtSign({sub: user.id, rank: user.rank, tokenType: TokenTypes.access});
+            const accessToken = await issueToken(res, session, user);
 
             void res.send({token: accessToken});
         }
