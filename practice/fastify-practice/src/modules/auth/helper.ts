@@ -3,8 +3,8 @@ import type {FastifyReply} from 'fastify';
 import {timingSafeEqual} from 'node:crypto';
 import {promisify} from 'util';
 import {Environment} from '@/common/const';
-import type {User} from '@/database/prisma/client';
-import {RefreshTokenAgeSec, TokenTypes, refreshCookieOptions} from './const';
+import type {Session, User} from '@/database/prisma/client';
+import {RefreshCookieName, RefreshTokenAgeSec, TokenTypes, refreshCookieOptions} from './const';
 import type SessionsService from './sessions/service';
 
 const scryptAsync = promisify(scrypt);
@@ -30,19 +30,20 @@ export const startSession = async (
     user: User
 ): Promise<string> => {
     const session = await sessionsService.createSession(user.id);
+    return issueToken(res, session, user);
+};
+
+export const issueToken = async (res: FastifyReply, session: Session, user: User): Promise<string> => {
     const payload = {sub: user.id, rank: user.rank};
 
-    const accessToken = await res.jwtSign({
-        ...payload,
-        tokenType: TokenTypes.access
-    });
+    const accessToken = await res.jwtSign({...payload, tokenType: TokenTypes.access});
 
     const refreshToken = await res.jwtSign(
-        {...payload, tokenType: TokenTypes.refresh, sessionId: session.id},
+        {...payload, tokenType: TokenTypes.refresh, sessionId: session.id, tokenId: session.tokenId},
         {expiresIn: RefreshTokenAgeSec}
     );
 
-    res.setCookie('refreshToken', refreshToken, {
+    res.setCookie(RefreshCookieName, refreshToken, {
         ...refreshCookieOptions,
         secure: res.server.config.NODE_ENV === Environment.production
     });
