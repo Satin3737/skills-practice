@@ -64,6 +64,7 @@ model Session {
   id        String   @id @default(cuid())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
+  tokenId   String   @default(cuid())
   expiresAt DateTime
   createdAt DateTime @default(now())
 
