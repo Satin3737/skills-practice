@@ -1,4 +1,4 @@
-import type {FastifyInstance} from 'fastify';
+import type {FastifyInstance, LightMyRequestResponse} from 'fastify';
 import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
 import {UserRank} from '@/database/prisma/enums';
 import {getRefreshCookie, loginUser, registerUser} from './helpers/auth';
@@ -141,6 +141,48 @@ describe('auth', () => {
 
             expect(res.statusCode).toBe(200);
             expect(res.json().token).toEqual(expect.any(String));
+        });
+
+        const refresh = (refreshToken: string): Promise<LightMyRequestResponse> => {
+            return app.inject({method: 'POST', url: '/auth/refresh', cookies: {refreshToken}});
+        };
+
+        const loginAndGetCookie = async (): Promise<string> => {
+            const {email, password} = await registerUser(app);
+            return getRefreshCookie(await loginUser(app, email, password));
+        };
+
+        it('rotates the refresh cookie on every refresh', async () => {
+            const first = await loginAndGetCookie();
+
+            const res1 = await refresh(first);
+            expect(res1.statusCode).toBe(200);
+            const second = getRefreshCookie(res1);
+            expect(second).not.toBe(first);
+
+            const res2 = await refresh(second);
+            expect(res2.statusCode).toBe(200);
+            expect(getRefreshCookie(res2)).not.toBe(second);
+        });
+
+        it('revokes the whole session when a rotated token is reused', async () => {
+            const stolen = await loginAndGetCookie();
+            const current = getRefreshCookie(await refresh(stolen));
+
+            const reuseRes = await refresh(stolen);
+            expect(reuseRes.statusCode).toBe(401);
+            expect(getRefreshCookie(reuseRes)).toBe('');
+
+            expect((await refresh(current)).statusCode).toBe(401);
+            expect(await app.prisma.session.count()).toBe(0);
+        });
+
+        it('lets only one of two concurrent refreshes with the same token succeed', async () => {
+            const cookie = await loginAndGetCookie();
+
+            const results = await Promise.all([refresh(cookie), refresh(cookie)]);
+
+            expect(results.map(r => r.statusCode).sort()).toEqual([200, 401]);
         });
     });
 
